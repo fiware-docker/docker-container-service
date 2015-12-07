@@ -1,2 +1,2 @@
 # docker-container-service
-FIWARE Docker Container Service
+The FIWARE Docker Container Service exposes the docker API.
