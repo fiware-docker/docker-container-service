@@ -1,6 +1,6 @@
 <!--[metadata]>
 +++
-title = "FIWARE Docker Container Service programmer and user guide"
+title = "FIWARE Docker Container Service user guide"
 description = "FIWARE Docker Container Service programmer and user guide user guide home page"
 keywords = ["docker, introduction, documentation, about, technology, docker.io, user, guide, user's, manual, platform, framework, virtualization, home,  intro"]
 [menu.main]
@@ -8,11 +8,19 @@ parent = "mn_fun_docker"
 +++
 <![end-metadata]-->
 
-#FIWARE Docker Container Service programmer and user guide
+#FIWARE Docker Container Service user guide
 ##Introduction
-##Quick Start
+The FIWARE Docker Container Service exposes the docker API so that FIWARE users can leverage their local docker clients to remotely manage their docker containers on the FIWARE Lab. This document describes how to use the service.
 
-==DOCKER_HOST==
+##Quick Start
+==Apply to get a FIWARE account==
+You can get a FIWARE Account [here](https://account.lab.fiware.org/).
+
+==Apply to get a FIWARE Docker Container Service Account==
+**TO DO.  We need a FIWARE page for doing this!** 
+
+
+++DOCKER_HOST++
 In order set up your docker client to interact with the FIWARE Docker Container Service you need export the service's URL to the DOCKER_HOST environment variable or reference the URL in each commands -H <services URL>
 
 `>export DOCKER_HOST=130.206.126.17:2376`
@@ -25,8 +33,16 @@ or
 
 The config.json file describes additional headers to include in the docker REST commands sent to the docker container servicer.  The the headers are X-Auth-Token and X-Auth-TenantId. 
 
-The file takes the following form: 
+The file takes the following form:
+
 { "HttpHeaders":
+&nbsp; &nbsp; &nbsp;  {
+&nbsp; &nbsp; &nbsp; &nbsp; "X-Auth-Token": keystone token id,      
+&nbsp; &nbsp; &nbsp; &nbsp;	"X-Auth-TenantId": keystone tenant id    
+&nbsp; &nbsp; &nbsp;  }
+}
+
+>{ "HttpHeaders":
 &nbsp; &nbsp; &nbsp;  {
 &nbsp; &nbsp; &nbsp; &nbsp; "X-Auth-Token": keystone token id,      
 &nbsp; &nbsp; &nbsp; &nbsp;	"X-Auth-TenantId": keystone tenant id    
@@ -78,14 +94,12 @@ set-docker-conf.sh script has many options for advanced users that are members o
 ##Docker Commandline
 ##Docker API
 ## Docker Compose
-
 Currently docker compose is not supported because it does not accept headers in the docker configuration file.
 
-##Docker Hub
-
+##Docker Image Repository Handling
 Currently the service only supports pulls of public images from the docker hub.  Private repositories are not supported.
 
-*How do I use Docker Hub?*
+==Docker Hub==
 
 Docker Hub is the central hub for Docker. It hosts public Docker images
 and provides services to help you build and manage your Docker
