@@ -22,7 +22,8 @@ You can get a FIWARE Account [here](https://account.lab.fiware.org/).
 **TO DO.  We need a FIWARE page for doing this!** 
 
 
-3) Specify FIWARE Docker Container Service URL as  *DOCKER_HOST* endpoint
+3) Specify FIWARE Docker Container Service URL as the *DOCKER_HOST* endpoint
+
 In order to prepare your docker client to interact with the FIWARE Docker Container Service you need export the service's URL to the DOCKER_HOST environment variable or reference the URL in each commands -H <services URL>
 
     >export DOCKER_HOST=130.206.126.17:2376
@@ -59,66 +60,43 @@ Run docker commands:
 Keystone token's expire after appproximately one day so you will need to update the configuration file daily.
 
 For advanced users of set-docker-conf.sh script see [set-docker-config](./set-docker-config.md).
--
 
-##Docker Commandline
-##Docker API
-## Docker Compose
-Currently docker compose is not supported because it does not accept headers in the docker configuration file.
+## Authorization
 
-##Docker Image Repository Handling
-Currently the service only supports pulls of public images from the docker hub.  Private repositories are not supported.
+Communication with the service is through REST.  Tenant authorization is accomplished by specifying a valid FIWARE keystone token and tenant id in http  headers "X-Auth-Token" and "X-Auth-TenantId".  The token owner must be authorized to use the service.  If the token has expired or the token is not authorized to access the specified tenant the request will be rejected.
 
-==Docker Hub==
+## Managing containers
 
-Docker Hub is the central hub for Docker. It hosts public Docker images
-and provides services to help you build and manage your Docker
-environment. To learn more:
+Docker requests to manage your containers are supported, but they are limited to containers that belong to the specified tenant. For instance ps will only list continainers associated with the specificed tenant.
 
-Go to [Using Docker Hub](https://docs.docker.com/docker-hub).
-
-## Dockerizing applications: A "Hello world"
-
-*How do I run applications inside containers?*
-
-Docker offers a *container-based* virtualization platform to power your
-applications. To learn how to Dockerize applications and run them:
-
-Go to [Dockerizing Applications](dockerizing.md).
-
-
-## Working with containers
-
-*How do I manage my containers?*
-
-Once you get a grip on running your applications in Docker containers
-we're going to show you how to manage those containers. To find out
-about how to inspect, monitor and manage containers:
-
-Go to [Working With Containers](usingdocker.md).
-
-## Working with Docker images
-
-*How can I access, share and build my own images?*
-
-Once you've learnt how to use Docker it's time to take the next step and
-learn how to build your own application images with Docker.
-
-Go to [Working with Docker Images](dockerimages.md).
+There are some restictions on docker requests to run and create containers.  
+In brief the restrictions are related to the fact that the service has to insolate tenants from each other and from the docker host. 
 
 ## Networking containers
 
-## Managing data in your containers
+The port bindings to the host external ports are restricted to those that the docker auto assigns in the ephermal port range which typically ranges from 32768 to 61000.  Thus the -P or --publish-all flags are supported but specifying a value in the host port with the -p or --publish flag are rejected.
 
-The local host should not be referenced in your docker commands.  Commands that reference the local host will be rejected
+## Managing container data
 
-Go to [Managing Data in Containers](dockervolumes.md).
+The local host should not be referenced in your docker commands.  Commands that reference the local host will be rejected.  Thus a command that referene the docker host directory in the -v or --volume command is rejected.
+
+## Managing docker images
+Currently the service does note not allow you build or manage images.  However you can pull images from [Docker Hub](https://docs.docker.com/docker-hub).
+
+Note: we do plan to support managing images in private repositories in the future.
 
 
- 
+##Docker Commandline
+Once you prepare your docker client as described in [Quick Start](./#Quick Start) you can use
+the (Docker CLI)[https://docs.docker.com/engine/reference/commandline/cli/].  
+All the commands to manage your containers are supported.
+But they are limited to containers that belonging to the tenant specified in your config.json file.  So ps will only list containers belonging to the specified tenant.
 
+There are some restictions on docker run and create that are listed below:  
 
-
+##Docker API
+## Docker Compose
+Currently docker compose is not supported because it does not accept headers in the docker configuration file.
 
 ## Getting Docker help
 
