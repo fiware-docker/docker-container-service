@@ -63,14 +63,13 @@ For advanced users of set-docker-conf.sh script see [set-docker-config](./set-do
 
 ## Authorization
 
-Communication with the service is through REST.  Tenant authorization is accomplished by specifying a valid FIWARE keystone token and tenant id in http  headers "X-Auth-Token" and "X-Auth-TenantId".  The token owner must be authorized to use the service.  If the token has expired or the token is not authorized to access the specified tenant the request will be rejected.
+Communication with the service is through REST.  Tenant authorization is accomplished by specifying a valid FIWARE keystone token and tenant id in http  headers "X-Auth-Token" and "X-Auth-TenantId".  The token owner must be authorized to use the service.  A request will be rejected if the token has expired or the token is not authorized to access the specified tenant.
 
 ## Managing containers
 
-Docker requests to manage your containers are supported, but they are limited to containers that belong to the specified tenant. For instance ps will only list continainers associated with the specificed tenant.
+Docker requests to manage your containers are supported, but they are limited to containers that belong to the specified tenant.  For instance ps will only list continainers associated with the specificed tenant.
 
-There are some restictions on docker requests to run and create containers.  
-In brief the restrictions are related to the fact that the service has to insolate tenants from each other and from the docker host. 
+There are some restictions on docker requests to run and create containers. In brief the restrictions are related to the fact that the service has to isolate tenants from each other and from the docker host.  Thus in addition to not be able view or manage containers that don't belong to your tenant, you tenants are not allowed to disproportionately utilize resources. 
 
 ## Networking containers
 
@@ -81,18 +80,18 @@ The port bindings to the host external ports are restricted to those that the do
 The local host should not be referenced in your docker commands.  Commands that reference the local host will be rejected.  Thus a command that referene the docker host directory in the -v or --volume command is rejected.
 
 ## Managing docker images
+
 Currently the service does note not allow you build or manage images.  However you can pull images from [Docker Hub](https://docs.docker.com/docker-hub).
 
 Note: we do plan to support managing images in private repositories in the future.
 
 
-##Docker Commandline
+##Docker CLI
 Once you prepare your docker client as described in [Quick Start](./#Quick Start) you can use
 the (Docker CLI)[https://docs.docker.com/engine/reference/commandline/cli/].  
-All the commands to manage your containers are supported.
-But they are limited to containers that belonging to the tenant specified in your config.json file.  So ps will only list containers belonging to the specified tenant.
+All the commands to manage your containers are supported. But they are limited to containers that belonging to the tenant specified in your config.json file.  So ps will only list containers belonging to the specified tenant. Likewise, there are some restictions on docker run and create.
 
-There are some restictions on docker run and create that are listed below:  
+See {Docker CLI Support](./docker-cli.md).
 
 ##Docker API
 ## Docker Compose
