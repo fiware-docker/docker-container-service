@@ -13,14 +13,16 @@ parent = "mn_fun_docker"
 The FIWARE Docker Container Service exposes the docker API so that FIWARE users can leverage their local docker clients to remotely manage their docker containers on the FIWARE Lab. This document describes how to use the service.
 
 ##Quick Start
-*Apply to get a FIWARE account*
+1) *Apply to get a FIWARE account*
+
 You can get a FIWARE Account [here](https://account.lab.fiware.org/).
 
-*Apply to get a FIWARE Docker Container Service Account*
+2) *Apply to get a FIWARE Docker Container Service Account*
+
 **TO DO.  We need a FIWARE page for doing this!** 
 
 
-*DOCKER_HOST*
+3) Specify FIWARE Docker Container Service URL as  *DOCKER_HOST* endpoint
 In order set up your docker client to interact with the FIWARE Docker Container Service you need export the service's URL to the DOCKER_HOST environment variable or reference the URL in each commands -H <services URL>
 
     >export DOCKER_HOST=130.206.126.17:2376
@@ -29,27 +31,12 @@ or
 
     >docker -H 130.206.126.17:2376
 
-*Docker configuration file*
+4) +Set up *Docker configuration file*
 
 The config.json file describes additional headers to include in the docker REST commands sent to the docker container servicer.  The the headers are X-Auth-Token and X-Auth-TenantId. 
 
-The file takes the following form:
+The *config.json* takes the following form:
 
-{ "HttpHeaders":
-&nbsp; &nbsp; &nbsp;  {
-&nbsp; &nbsp; &nbsp; &nbsp; "X-Auth-Token": keystone token id,      
-&nbsp; &nbsp; &nbsp; &nbsp;	"X-Auth-TenantId": keystone tenant id    
-&nbsp; &nbsp; &nbsp;  }
-}
-
->{ "HttpHeaders":
-&nbsp; &nbsp; &nbsp;  {
-&nbsp; &nbsp; &nbsp; &nbsp; "X-Auth-Token": keystone token id,      
-&nbsp; &nbsp; &nbsp; &nbsp;	"X-Auth-TenantId": keystone tenant id    
-&nbsp; &nbsp; &nbsp;  }
-}
-
-#config.json
     { "HttpHeaders":
       {
         "X-Auth-Token": <keystone token id>,      
@@ -58,15 +45,19 @@ The file takes the following form:
     }
 
 
-The default location of the configuration file is $HOME/.docker.  But you can use the docker --config flag to indicate another directory. 
+The default location of the configuration file is *$HOME/.docker*.  But you can use the docker --config flag to indicate another directory. 
 
-There are many ways to get your keystone token id and tenant id.  For instance you could use curl.  But we have provided and utility that makes creating your config.json file easy.
+There are many ways to get your keystone token id and tenant id.  For instance you could use curl.  But we have provided and utility called [set-docker-config](./index.md#set-docker-config) that makes creating your config.json file easy.
 
 Download [set_docker_config](https://github.com/swarm-hooks/swarm/blob/fiware/tools/set_docker_conf.sh):
+
     >wget https://github.com/swarm-dooks/swarm/blob/fiware/tools/set_docker_conf.sh
+    
 Create default docker configuration file, .docker/config.json, for default:
+
     >set_docker_conf.sh -t <fiware-tenant-name> -u <fiware-user-name> -p <user-password>
 Run docker commands:
+
     >docker <cmd> 
 
 Keystone token's expire after appproximately one day so you will need to update the configuration file daily.
