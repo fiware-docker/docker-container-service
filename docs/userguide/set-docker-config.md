@@ -5,16 +5,17 @@ Download [set_docker_config](https://github.com/swarm-hooks/swarm/blob/fiware/to
     >wget https://github.com/swarm-dooks/swarm/blob/fiware/tools/set_docker_conf.sh
 ##usage    
 set-docker-conf.sh script has many options for advanced users that are members of multiple fiware tenants and want to create many docker configuration directories.
-     >set_docker_conf.sh -h
+     
+     >>set_docker_conf.sh -h
      This script updates docker config file with Keystone
-     tenant/token variables Keystone server IP must be specified
+     tenant/token variables. The Keystone server IP must be specified
      either as script input or added to environment as KEYSTONE_IP
-     variable. The rest (OS_USERNAME, OS_PASSWORD...etc.) the script
-     may get from environment, so in most cases it's enough to
-     source OpenStack openrc file
+     variable. The script may retrieve additional environment variable (OS_USERNAME, OS_PASSWORD...etc.) 
+     from environment, so in most cases it's enough to
+     source OpenStack openrc yhr file
 
-     In case environment missing those variables those must be supplied as script arguments
-     If no arguments specified will try to use defaults below:
+     In case the environment is missing those variables they can be supplied as script arguments
+     If no arguments are specified it will try to use defaults below:
      ---------------------------
      Docker conf file:         /home/nagin/.docker
      OpenStack Tenant name:    
