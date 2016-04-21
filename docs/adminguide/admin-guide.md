@@ -16,19 +16,13 @@ This section describes the procedure for manually deploying a Docker Container S
 
 <li> Create a security group for the Swarm Management Node.  It containers rules for allowing public access to the Swarm Manager Port, SSH port, and Ping. For example:
 
-|service       | IP Protocol | From Port | To Port | Source            |
-|--------------|-------------|-----------|---------|-------------------|
-| SSH          | TCP         | 22        | 22      | 0.0.0.0/0 (CIDR)  |
-| Ping         | ICMP        | 0         | 0       | 0.0.0.0/0 (CIDR)  |
-| Swarm Manager| TCP         | 2376      | 2376    | 0.0.0.0/0 (CIDR)  |
-
  <table style="width:100%">
   <tr>
-    <td>service</td>
-    <td>IP Protocol</td>
-    <td>From Port</td>
-    <td>To Port</td>
-    <td>Source<td>
+    <th><b>service</b></th>
+    <th><b>IP Protocol</b></th>
+    <th><b>From Port</b></th>
+    <th><b>To Port</b></th>
+    <th><b>Source</b><th>
   </tr>
   <tr>
     <td>SSH</td>
@@ -59,13 +53,44 @@ This section describes the procedure for manually deploying a Docker Container S
 
 <li> Create a security group for the Docker nodes.  It containers rules for allowing public access to the SSH port, Ping, and docker auto assigned ports.  The docker auto assigned ports are those ports that docker automatically assigns to containers as there external ports when they are not specifically designated in the docker command.  It also containers a rule for exclusive access to the Docker port from the Swarm Management Node.  Use the Swam Management Node’s public IP.  
 
-service       | IP Protocol | From Port | To Port | Source 
-------------- | ------------| --------- | ------- | ----------------
-SSH           | TCP         | 22        | 22      | 0.0.0.0/0 (CIDR)
-Ping          | ICMP        | 0         | 0       | 0.0.0.0/0 (CIDR)
-Docker Engine | TCP         | 2375      | 2375    | <Swarm Manager Public IP/32 (CIDR)
-Docker Containers auto assigned by docker engine   | TCP         | 32768     | 32768   | 0.0.0.0/0 (CIDR)
- 
+ <table style="width:100%">
+  <tr>
+    <th><b>service</b></th>
+    <th><b>IP Protocol</b></th>
+    <th><b>From Port</b></th>
+    <th><b>To Port</b></th>
+    <th><b>Source</b></th>
+  </tr>
+  <tr>
+    <td>SSH</td>
+    <td>TCP</td>
+    <td>22</td>
+    <td>22</td>
+    <td> 0.0.0.0/0 (CIDR)<td>
+  </tr>
+  <tr>
+    <td>Ping</td>
+    <td>ICMP</td>
+    <td>0</td>
+    <td>0</td>
+    <td> 0.0.0.0/0 (CIDR)<td>
+  </tr>
+  <tr>
+    <td>Docker Engine</td>
+    <td>TCP</td>
+    <td>2375</td>
+    <td>2375</td>
+    <td> Swarm Manager Public IP/32 (CIDR)<td>
+  </tr>
+    <tr>
+    <td>Docker Containers auto assigned by docker engine</td>
+    <td>TCP</td>
+    <td>32768</td>
+    <td>61000</td>
+    <td> 0.0.0.0/0 (CIDR) </td>
+  </tr>
+  </table>
+
 <li> Create docker nodes.  Associate them with their security group and ssh keypair. 
 Install Docker on all the Docker Node instances (http://docs.docker.com/engine/installation/).  
 Enable swap cgroup memory limit following those steps from docker  documentation https://docs.docker.com/engine/installation/ubuntulinux/
@@ -74,23 +99,82 @@ Enable swap cgroup memory limit following those steps from docker  documentation
 
 <li> Create a NFS Server.  Associate it with its security group and key pair.
 
-<li> Start the docker engines daemon to listen on the port that was specified when you created the Docker Nodes security group in step <4>.  Optionally, you can allow it to also listen on a linux file socket to simplify debug. >sudo docker daemon -H unix:///var/run/docker.sock -H tcp://0.0.0.0:2375 – icc=false
+<li> Start the docker engines daemon to listen on the port that was specified when you created the Docker Nodes security group above.  Optionally, you can allow it to also listen on a linux file socket to simplify debug.  For instance:
+
+     <b>>sudo docker daemon -H unix:///var/run/docker.sock -H tcp://0.0.0.0:2375 –icc=false </b>
 
 <li> Configuring Swarm:
    Environment Variables:
-      -- SWARM_MULTI_TENANT: if set to false vanila swarm is run with out multi-tenancy or name scoping.
-      -- SWARM_AUTH_BACKEND: if set to Keystone then Keystone is used to authenticate and authorization docker requests based on the Authorization Token and Tenant ID in their request header. 
-      -- SWARM_MEMBERS_TENANT_ID: contains the id of the tenant whose members are eligible to use the service. If not set then any valid token tenant id may use the service. Only only valid when SWARM_AUTH_BACKEND is set to Keystone.
-      -- SWARM_ADMIN_TENANT_ID: contains the id of the tenant that may run docker commands as admin. 
-      -- SWARM_FLAVORS_ENFORCED
-      -- SWARM_FLAVORS_FILE
-      -- SWARM_CONFIG
+   <ul>
+      <li> <b>SWARM_MULTI_TENANT</b>: if set to false vanila swarm is run without multi-tenancy or name scoping.
+      <li> <b>SWARM_AUTH_BACKEND:</b> if set to Keystone then Keystone is used to authenticate and authorization docker requests based on the Authorization Token and Tenant ID in their request header. 
+      <li> <b>SWARM_MEMBERS_TENANT_ID</b>: contains the tenant id whose members are eligible to use the service. If not set then any valid token tenant id may use the service. SWARM_MEMBERS_TENANT_ID is only valid when SWARM_AUTH_BACKEND is set to Keystone.
+      <li> <b>SWARM_ADMIN_TENANT_ID</b>: contains the id of the tenant that may run docker commands as admin. 
+      <li> <b>SWARM_FLAVORS_ENFORCED</b>: Flavors enforcement only occurs on docker create.  Docker users can only specify resource combinations that appear in one the predefined flavors. Note there is little flexibility the specified resources must exactly match one of the predefined flavors. Also the set of favors are for all tenants.  By default flavors enforcement are disabled.  However, the swarm administrator can enable it by setting SWARM_FLAVORS_ENFORCED  to true. 
+      <li> <b>SWARM_FLAVORS_FILE</b>: Flavors are defined by the swarm administrator in a json file which containers a map of the resource combinations that are enforced.  This is an example:
+<sample>
+      {   "default":
+         {    "Memory": 0,    
+              "MemoryReservation": 0,    
+              "MemorySwap":         0,    
+              "KernelMemory":       0,    
+              "CpuShares":          0,    
+              "CpuPeriod":          0,    
+              "CpuQuota":          0,    
+              "BlkioWeight":       0,    
+              "OomKillDisable":    false,    
+              "MemorySwappiness":  -1,    
+              "Privileged":        false,    
+              "ReadonlyRootfs":    false   
+           },   
+         "small":
+         {    "Memory": 0,    
+              "MemoryReservation": 0,    
+              "MemorySwap":         0,    
+              "KernelMemory":       0,    
+              "CpuShares":          1,    
+              "CpuPeriod":          1,    
+              "CpuQuota":          0,    
+              "BlkioWeight":       0,    
+              "OomKillDisable":    false,    
+              "MemorySwappiness":  -1,    
+              "Privileged":        false,    
+              "ReadonlyRootfs":     false   
+          } 
+     }
+</sample>
+       By default the json file resides in ./flavors.json, but the administrator can use  SWARM_FLAVORS_FILE to specify another path. The properties file is only read once at initialization.  If the administrator wants to change the flavors it is required to restart swarm.
+       
+      <li> <b>SWARM_CONFIG</b>: The	Swarm configuration file, authHookConf.json, is a json file that contains the Keystone URL and tenant memory quota limits.
+      <code>
+      {
+         "TenancyLabel":"com.ibm.tenant.0",
+         "KeystoneUrl":"http://cloud.lab.fi-ware.org:4730/v2.0/",
+         "KeyStoneXAuthToken":"ADMIN",
+         "AuthTokenHeader":"X-Auth-Token",
+         "quotas":{
+                "Memory": 128
+          }
+      }
+      </code>
+      If you want to use a different settings make changes to KeystoneURL:<your keystone URL> and/or quota attributes and restart swarm. By default authHookConf.json resides in the same directory from which the swarm binary is started.
+Best practice is to set SWARM_CONFIG environment variable that will point to the configuration file. For instance:
+     <b>>export SWARM_CONFIG=~/work/src/github.com/docker/swarm/authHookConf.json</b>
 
-<li> Start  Multi-Tenant  Swarm Manager daemon (without TLS) on the Swarm Management Node.  If token discovery is to be used then add the discovery flag, otherwise use the file flag to point to a file with a list of all the Docker Node public ips and docker ports. 
+    </ul>
+
+<li> Start  Multi-Tenant  Swarm Manager daemon (without TLS) on the Swarm Management Node.  If token discovery is to be used then add the discovery flag, otherwise use the file flag to point to a file with a list of all the Docker Node public ips and docker ports.  For instance:
+
+     ><b>swarm --debug manage  -H tcp://0.0.0.0:2376 file://../cluster.ips</b>    
 
 <li> Test the cluster’s remote connectivity by pinging and sshing to all the instances (including the Swarm Management Node). 
 
-<li> Test whether the Multi-Tenant Swarm Cluster works as expected by using docker commands on your local docker client.  The docker –H flag specifies the Swarm Manager Node and swarm port.  The docker –config specifies the directory where a config.json file is prepared with a valid token and a valid tenantid. 
+<li> Test whether the Multi-Tenant Swarm Cluster works as expected by using docker commands on your local docker client.  The docker –H flag specifies the Swarm Manager Node and swarm port.  The docker –config specifies the directory where a config.json file is prepared with a valid token and a valid tenantid.  For instance:
+
+     >docker –H tcp://<Swam Manager Node IP>:2376  --config $HOME/dir docker command
+
+See the [FIWARE Docker Container Service Users Guide](https://github.com/fiware-docker/docker-container-service/blob/master/docs/userguide/user-guide.md) for more details on how to use the  service.
+
 </ol>  
 
 ## Getting Docker help
