@@ -1,5 +1,5 @@
 #Docker CLI
-Once you prepare your docker client as described in the user guide's [Quick Start](./user-guide.md##Quick Start) you can use the [Docker CLI](https://docs.docker.com/engine/reference/commandline/cli/).  
+Once you prepare your docker client as described in the user guide's [Quick Start](./user-guide.md##Quick Start) you can use the [Docker CLI](https://docs.docker.com/engine/reference/commandline/cli/). We support docker 1.10.3 and above. 
 
 
 All the commands to manage your containers are supported. But they are limited to containers that belonging to the tenant specified in your config.json file.  For instance, ps will only list containers belonging to the specified tenant.
@@ -35,7 +35,7 @@ These docker cli commands are supported:
 - top
 - unpause
 - version
-- volume create  (what restriction for the --driver flag?)
+- volume create  (note: only the default driver is currently supported)
 - volume inspect
 - volume ls
 - volume rm
@@ -45,7 +45,7 @@ These docker run flags are supported, but there may be some restrictions:
 
 - a, attach
 - d, detach
-- e, env
+- e, env  (note affinity and constraints are suppoted) dock
 - entrypint
 - expose
 - hostname
