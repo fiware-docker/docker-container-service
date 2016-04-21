@@ -13,11 +13,11 @@ parent = "mn_fun_docker"
 This section describes the procedure for manually deploying a Docker Container Service on OpenStack.  In brief, the Docker Container Service is a Multi-Tenant Swarm cluster.  We refer to the node where the Multi-Tenant Swarm manager is running as the Swarm Management Node and nodes where the docker engines are running as the Docker Nodes.  The following steps are required:
 1. Create an SSH key pair that will be used to access the Swarm Management Node, the Docker Nodes in the Swarm cluster, and NFS Server
 2. Create a security group for the Swarm Management Node.  It containers rules for allowing public access to the Swarm Manager Port, SSH port, and Ping. For example:
-service       | IP Protocol | From Port | To Port | Source 
-------------- | ------------| --------- | ------- | ----------------
-SSH           | TCP         | 22        | 22      | 0.0.0.0/0 (CIDR)
-Ping          | ICMP        | 0         | 0       | 0.0.0.0/0 (CIDR)
-Swarm Manager | TCP         | 2376      | 2376    | 0.0.0.0/0 (CIDR)
+|service       | IP Protocol | From Port | To Port | Source            |
+|--------------|-------------|-----------|---------|-------------------|
+| SSH          | TCP         | 22        | 22      | 0.0.0.0/0 (CIDR)  |
+| Ping         | ICMP        | 0         | 0       | 0.0.0.0/0 (CIDR)  |
+| Swarm Manager| TCP         | 2376      | 2376    | 0.0.0.0/0 (CIDR)  |
 
 3. Create a Swarm Management Node VM instance.  Associate it with its security group and key pair. Optionally install Docker on the Swarm Management Node to allow you to use the docker cli to send docker commands from the Swarm Management Node to the Docker Nodes for debug purpose.
 4. Create a security group for the Docker nodes.  It containers rules for allowing public access to the SSH port, Ping, and docker auto assigned ports.  The docker auto assigned ports are those ports that docker automatically assigns to containers as there external ports when they are not specifically designated in the docker command.  It also containers a rule for exclusive access to the Docker port from the Swarm Management Node.  Use the Swam Management Node’s public IP.  
