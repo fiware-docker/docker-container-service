@@ -5,7 +5,7 @@ Click [download](http://catalogue.fiware.org/enablers/docker/downloads) to downl
     
 ##usage    
 
- 	This script configures your docker client json configuration file (config.json) to access the FIWARE Docker Container Cloud. It updates config.json in the specified directory with your Keystone tenant id and token. The Keystone server IP defaults to FIWARE's identity manager, but you may change it to your own private Openstack Keystone. You have to supply your Keystone user name, password, and tenant name. Optionally, you may specify the directory which you want to place the config.json, otherwise it defaults to $HOME/.docker. 
+This script configures your docker client json configuration file (config.json) to access the FIWARE Docker Container Cloud. It updates config.json in the specified directory with your Keystone tenant id and token. The Keystone server IP defaults to FIWARE's identity manager, but you may change it to your own private Openstack Keystone. You have to supply your Keystone user name, password, and tenant name. Optionally, you may specify the directory which you want to place the config.json, otherwise it defaults to $HOME/.docker. 
     
 The script has many options for advanced users that are members of multiple fiware tenants and want to create many docker configuration directories.
      
