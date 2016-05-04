@@ -1,10 +1,13 @@
-#set-docker-config
+#set-docker-conf
 ##download
-Download [set_docker_config](https://github.com/swarm-hooks/swarm/blob/fiware/tools/set_docker_conf.sh):
+Click [download](http://catalogue.fiware.org/enablers/docker/downloads) to download set_docker_conf.bash
 
-    >wget https://github.com/swarm-dooks/swarm/blob/fiware/tools/set_docker_conf.sh
+    
 ##usage    
-set-docker-conf.sh script has many options for advanced users that are members of multiple fiware tenants and want to create many docker configuration directories.
+
+ 	This script configures your docker client json configuration file (config.json) to access the FIWARE Docker Container Cloud. It updates config.json in the specified directory with your Keystone tenant id and token. The Keystone server IP defaults to FIWARE's identity manager, but you may change it to your own private Openstack Keystone. You have to supply your Keystone user name, password, and tenant name. Optionally, you may specify the directory which you want to place the config.json, otherwise it defaults to $HOME/.docker. 
+    
+The script has many options for advanced users that are members of multiple fiware tenants and want to create many docker configuration directories.
      
      >>set_docker_conf.sh -h
      This script updates docker config file with Keystone
