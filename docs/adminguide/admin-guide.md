@@ -66,21 +66,21 @@ This section describes the procedure for manually deploying a Docker Container S
     <td>TCP</td>
     <td>22</td>
     <td>22</td>
-    <td> 0.0.0.0/0 (CIDR)<td>
+    <td> 0.0.0.0/0 (CIDR)</td>
   </tr>
   <tr>
     <td>Ping</td>
     <td>ICMP</td>
     <td>0</td>
     <td>0</td>
-    <td> 0.0.0.0/0 (CIDR)<td>
+    <td> 0.0.0.0/0 (CIDR)</td>
   </tr>
   <tr>
     <td>Docker Engine</td>
     <td>TCP</td>
     <td>2375</td>
     <td>2375</td>
-    <td> Swarm Manager Public IP/32 (CIDR)<td>
+    <td> Swarm Manager Public IP/32 (CIDR)</td>
   </tr>
     <tr>
     <td>Docker Containers auto assigned by docker engine</td>
@@ -110,43 +110,55 @@ Enable swap cgroup memory limit following those steps from docker  documentation
     <td>TCP</td>
     <td>22</td>
     <td>22</td>
-    <td> 0.0.0.0/0 (CIDR)<td>
+    <td> 0.0.0.0/0 (CIDR)</td>
   </tr>
   <tr>
     <td>Ping</td>
     <td>ICMP</td>
     <td>0</td>
     <td>0</td>
-    <td> 0.0.0.0/0 (CIDR)<td>
+    <td> 0.0.0.0/0 (CIDR)</td>
   </tr>
   <tr>
     <td>NFS Server</td>
     <td>TCP</td>
     <td>2049</td>
     <td>2049</td>
-    <td> Docker Nodes  IP/32 (CIDR)<td>
+    <td> Docker Nodes  IP/32 (CIDR)</td>
   </tr>
   <tr>
     <td>NFS Server</td>
     <td>UDP</td>
     <td>2049</td>
     <td>2049</td>
-    <td> Docker Nodes  IP/32 (CIDR)<td>
+    <td> Docker Nodes  IP/32 (CIDR)</td>
   </tr>
 </table>
 
 
 <li> Create a NFS Server.  Associate it with its security group and key pair.
-     <b>>sudo service nfs-kernel-server restart</b>
+<li> Install, configure and start the NFS Server:  
+    <b>>apt-get install nfs-kernel-server</b>
+     Create a directory that will be used to mount the docker volumes on the docker nodes:
+    <b>>sudo mkdir /docker_volumes</b>
+     In <b>/etc/hosts/</b> allow access to the docker volume directory to the docker nodes.  For instance:
+    <b>/docker_volumes <docker node ip>/24(rw,sync,no_subtree_check,no_root_squash)</b>.
+     Start the nfs server:
+    <b>>sudo service nfs-kernel-server restart</b>
+<li> On the docker nodes install the NFS client and configure it to use the nfs mount point:
+    <b>>sudo apt-get install common-nfs</b>
+     Mount the docker volumes directory to be backed by nfs:
+    <b>>sudo mount -t nfs -o proto=tcp,port=2049 <nfs server ip>:/docker_volumes /var/lib/docker/volumes</b>
+     
 
 <li> Start the docker engines daemon to listen on the port that was specified when you created the Docker Nodes security group above.  Optionally, you can allow it to also listen on a linux file socket to simplify debug.  For instance:
 
-     <b>>sudo docker daemon -H unix:///var/run/docker.sock -H tcp://0.0.0.0:2375 –icc=false </b>
+    <b>>sudo docker daemon -H unix:///var/run/docker.sock -H tcp://0.0.0.0:2375 –icc=false </b>
      
      Another alternative is update <b>/etc/default/docker</b> with 
-     <b>DOCKER_OPTS="-H unix:///var/run/docker.sock -H tcp://0.0.0.0:2375 --icc=false"</b>.  
+    <b>DOCKER_OPTS="-H unix:///var/run/docker.sock -H tcp://0.0.0.0:2375 --icc=false"</b>.  
      And then start docker as a service:
-     <b>>sudo service docker restart</b>
+    <b>>sudo service docker restart</b>
 
 <li> Configuring Swarm:
    Environment Variables:
@@ -211,13 +223,13 @@ Best practice is to set SWARM_CONFIG environment variable that will point to the
 <li> Start Multi-Tenant Swarm Manager daemon (without TLS) on the Swarm Management Node.  The Multi-Tenant Swarm docker image resides in the FIWARE Docker Hub repository at [fiware/swarm_multi_tenant](https://hub.docker.com/r/fiware/swarm_multi_tenant/) 
 If token discovery is to be used then add the discovery flag, otherwise use the file flag to point to a file with a list of all the Docker Node public ips and docker ports.  For instance:
 
-     ><b>docker run -t -p 2376:2375 -v /tmp/cluster.ipstmp/cluster.ips -e SWARM_AUTH_BACKEND=Keystone -t fiware/swarm_multi_tenant:v0 --debug manage  file:///tmp/cluster.ips</b>    
+    ><b>docker run -t -p 2376:2375 -v /tmp/cluster.ipstmp/cluster.ips -e SWARM_AUTH_BACKEND=Keystone -t fiware/swarm_multi_tenant:v0 --debug manage  file:///tmp/cluster.ips</b>    
 
 <li> Test the cluster’s remote connectivity by pinging and sshing to all the instances (including the Swarm Management Node). 
 
 <li> Test whether the Multi-Tenant Swarm Cluster works as expected by using docker commands on your local docker client.  The docker –H flag specifies the Swarm Manager Node and swarm port.  The docker –config specifies the directory where a config.json file is prepared with a valid token and a valid tenantid.  For instance:
 
-     >docker –H tcp://<Swam Manager Node IP>:2376  --config $HOME/dir docker command
+    >docker –H tcp://<Swam Manager Node IP>:2376  --config $HOME/dir docker command
 
 See the [FIWARE Docker Container Service Users Guide](https://github.com/fiware-docker/docker-container-service/blob/master/docs/userguide/user-guide.md) for more details on how to use the  service.
 
