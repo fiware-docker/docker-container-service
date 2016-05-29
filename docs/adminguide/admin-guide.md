@@ -49,7 +49,7 @@ This section describes the procedure for manually deploying a Docker Container S
 
 </table> 
 
-<li> Create a Swarm Management Node VM instance.  Associate it with its security group and key pair. Optionally install Docker on the Swarm Management Node to allow you to use the docker cli to send docker commands from the Swarm Management Node to the Docker Nodes for debug purpose.
+<li> Create a Swarm Management Node VM instance.  Associate it with its security group and key pair. Install Docker on the Swarm Management Node which will be used to launch the docker image of the Multi-Tenant Swarm.
 
 <li> Create a security group for the Docker nodes.  It containers rules for allowing public access to the SSH port, Ping, and docker auto assigned ports.  The docker auto assigned ports are those ports that docker automatically assigns to containers as there external ports when they are not specifically designated in the docker command.  It also containers a rule for exclusive access to the Docker port from the Swarm Management Node.  Use the Swam Management Node’s public IP.  
 
@@ -216,14 +216,16 @@ Enable swap cgroup memory limit following those steps from docker  documentation
       </code>
       If you want to use a different settings make changes to KeystoneURL:<your keystone URL> and/or quota attributes and restart swarm. By default authHookConf.json resides in the same directory from which the swarm binary is started.
 Best practice is to set SWARM_CONFIG environment variable that will point to the configuration file. For instance:
-     <b>>export SWARM_CONFIG=~/work/src/github.com/docker/swarm/authHookConf.json</b>
+     '>export SWARM_CONFIG=~/work/src/github.com/docker/swarm/authHookConf.json'
 
     </ul>
 
 <li> Start Multi-Tenant Swarm Manager daemon (without TLS) on the Swarm Management Node.  The Multi-Tenant Swarm docker image resides in the FIWARE Docker Hub repository at [fiware/swarm_multi_tenant](https://hub.docker.com/r/fiware/swarm_multi_tenant/) 
 If token discovery is to be used then add the discovery flag, otherwise use the file flag to point to a file with a list of all the Docker Node public ips and docker ports.  For instance:
 
-    ><b>docker run -t -p 2376:2375 -v /tmp/cluster.ipstmp/cluster.ips -e SWARM_AUTH_BACKEND=Keystone -t fiware/swarm_multi_tenant:v0 --debug manage  file:///tmp/cluster.ips</b>    
+   <br>
+   <b>>docker run -t -p 2376:2375 -v /tmp/cluster.ipstmp/cluster.ips -e SWARM_AUTH_BACKEND=Keystone -t fiware/swarm_multi_tenant:v0 --debug manage  file:///tmp/cluster.ips</b>
+   </br>
 
 <li> Test the cluster’s remote connectivity by pinging and sshing to all the instances (including the Swarm Management Node). 
 
@@ -231,7 +233,10 @@ If token discovery is to be used then add the discovery flag, otherwise use the 
 
     >docker –H tcp://<Swam Manager Node IP>:2376  --config $HOME/dir docker command
 
-See the [FIWARE Docker Container Service Users Guide](https://github.com/fiware-docker/docker-container-service/blob/master/docs/userguide/user-guide.md) for more details on how to use the  service.
+See the [FIWARE Docker Container Service Users Guide](https://github.com/fiware-docker/docker-container-service/blob/master/docs/userguide/user-guide.md) 
+<a hdref=https://github.com/fiware-docker/docker-container-service/blob/master/docs/userguide/user-guide.md>FIWARE Docker Container Service Users Guide</a>
+
+for more details on how to use the  service.
 
 </ol>  
 
