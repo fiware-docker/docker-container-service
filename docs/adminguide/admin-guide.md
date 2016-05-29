@@ -140,31 +140,46 @@ Enable swap cgroup memory limit following those steps from docker  documentation
 <li> Create a NFS Server.  Associate it with its security group and key pair.
 <li> Install, configure and start the NFS Server:
 
-    ``` 
+    <p><b> 
      >apt-get install nfs-kernel-server
-    ```
+    </b></p>
     
      Create a directory that will be used to mount the docker volumes on the docker nodes:
+    <p>
     <b>>sudo mkdir /docker_volumes</b>
+    </p>
      In <b>/etc/hosts/</b> allow access to the docker volume directory to the docker nodes.  For instance:
+     <p>
     <b>/docker_volumes <docker node ip>/24(rw,sync,no_subtree_check,no_root_squash)</b>.
+    </p>
      Start the nfs server:
+     <p>
     <b>>sudo service nfs-kernel-server restart</b>
+    </p>
 
 <li> On the docker nodes install the NFS client and configure it to use the nfs mount point:
+    <p> 
     <b>>sudo apt-get install common-nfs</b>
+    </p>
      Mount the docker volumes directory to be backed by nfs:
+     <p>
     <b>>sudo mount -t nfs -o proto=tcp,port=2049 <nfs server ip>:/docker_volumes /var/lib/docker/volumes</b>
+    </p>
      
 
 <li> Start the docker engines daemon to listen on the port that was specified when you created the Docker Nodes security group above.  Optionally, you can allow it to also listen on a linux file socket to simplify debug.  For instance:
-
+    <p>
     <b>>sudo docker daemon -H unix:///var/run/docker.sock -H tcp://0.0.0.0:2375 –icc=false </b>
+    </p>
      
      Another alternative is update <b>/etc/default/docker</b> with 
-    <b>DOCKER_OPTS="-H unix:///var/run/docker.sock -H tcp://0.0.0.0:2375 --icc=false"</b>.  
+     <p>
+    <b>DOCKER_OPTS="-H unix:///var/run/docker.sock -H tcp://0.0.0.0:2375 --icc=false"</b>. 
+    </p>
      And then start docker as a service:
+     <p>
     <b>>sudo service docker restart</b>
+    </p>
 
 <li> Configuring Swarm:
    Environment Variables:
@@ -175,40 +190,21 @@ Enable swap cgroup memory limit following those steps from docker  documentation
       <li> <b>SWARM_ADMIN_TENANT_ID</b>: contains the id of the tenant that may run docker commands as admin. 
       <li> <b>SWARM_FLAVORS_ENFORCED</b>: Flavors enforcement only occurs on docker create.  Docker users can only specify resource combinations that appear in one the predefined flavors. Note there is little flexibility the specified resources must exactly match one of the predefined flavors. Also the set of favors are for all tenants.  By default flavors enforcement are disabled.  However, the swarm administrator can enable it by setting SWARM_FLAVORS_ENFORCED  to true. 
       <li> <b>SWARM_FLAVORS_FILE</b>: Flavors are defined by the swarm administrator in a json file which containers a map of the resource combinations that are enforced.  This is an example:
-<sample>
+      <p>
+      <code>
       {   "default":
-         {    "Memory": 0,    
-              "MemoryReservation": 0,    
-              "MemorySwap":         0,    
-              "KernelMemory":       0,    
-              "CpuShares":          0,    
-              "CpuPeriod":          0,    
-              "CpuQuota":          0,    
-              "BlkioWeight":       0,    
-              "OomKillDisable":    false,    
-              "MemorySwappiness":  -1,    
-              "Privileged":        false,    
-              "ReadonlyRootfs":    false   
+         {    "Memory": 4,    
            },   
          "small":
-         {    "Memory": 0,    
-              "MemoryReservation": 0,    
-              "MemorySwap":         0,    
-              "KernelMemory":       0,    
-              "CpuShares":          1,    
-              "CpuPeriod":          1,    
-              "CpuQuota":          0,    
-              "BlkioWeight":       0,    
-              "OomKillDisable":    false,    
-              "MemorySwappiness":  -1,    
-              "Privileged":        false,    
-              "ReadonlyRootfs":     false   
+         {    "Memory": 64,    
           } 
-     }
-</sample>
+      }
+      </code>
+      <p>
        By default the json file resides in ./flavors.json, but the administrator can use  SWARM_FLAVORS_FILE to specify another path. The properties file is only read once at initialization.  If the administrator wants to change the flavors it is required to restart swarm.
        
       <li> <b>SWARM_CONFIG</b>: The	Swarm configuration file, authHookConf.json, is a json file that contains the Keystone URL and tenant memory quota limits.
+      <p>
       <code>
       {
          "TenancyLabel":"com.ibm.tenant.0",
@@ -220,11 +216,12 @@ Enable swap cgroup memory limit following those steps from docker  documentation
           }
       }
       </code>
+      </p>
       If you want to use a different settings make changes to KeystoneURL:<your keystone URL> and/or quota attributes and restart swarm. By default authHookConf.json resides in the same directory from which the swarm binary is started.
 Best practice is to set SWARM_CONFIG environment variable that will point to the configuration file. For instance:
-     ```
-     >export SWARM_CONFIG=~/work/src/github.com/docker/swarm/authHookConf.json
-     ```
+     <p>
+     <b>>export SWARM_CONFIG=~/work/src/github.com/docker/swarm/authHookConf.json</p>
+     </p>
 
     </ul>
 
@@ -238,12 +235,11 @@ If token discovery is to be used then add the discovery flag, otherwise use the 
 
 <li> Test whether the Multi-Tenant Swarm Cluster works as expected by using docker commands on your local docker client.  The docker –H flag specifies the Swarm Manager Node and swarm port.  The docker –config specifies the directory where a config.json file is prepared with a valid token and a valid tenantid.  For instance:
 
+    <p><b>    
     >docker –H tcp://<Swam Manager Node IP>:2376  --config $HOME/dir docker command
+    </b></b>
 
-See the [FIWARE Docker Container Service Users Guide](https://github.com/fiware-docker/docker-container-service/blob/master/docs/userguide/user-guide.md) 
-<a hdref=https://github.com/fiware-docker/docker-container-service/blob/master/docs/userguide/user-guide.md>FIWARE Docker Container Service Users Guide</a>
-
-for more details on how to use the  service.
+See the FIWARE Docker Container Service Users Guide for more details on how to use the  service.
 
 </ol>  
 
