@@ -11,10 +11,11 @@ parent = "mn_fun_docker"
 #FIWARE Docker Container Service Installation and Administration Guide
 ##Deployment Steps
 This section describes the procedure for manually deploying a Docker Container Service on OpenStack.  In brief, the Docker Container Service is a Multi-Tenant Swarm cluster.  We refer to the node where the Multi-Tenant Swarm manager is running as the Swarm Management Node and nodes where the docker engines are running as the Docker Nodes.  The following steps are required:
-<ol>
-<li> Create an SSH key pair that will be used to access the Swarm Management Node, the Docker Nodes in the Swarm cluster, and NFS Server
 
-<li> Create a security group for the Swarm Management Node.  It containers rules for allowing public access to the Swarm Manager Port, SSH port, and Ping. For example:
+<ol>
+<li>Create an SSH key pair that will be used to access the Swarm Management Node, the Docker Nodes in the Swarm cluster, and NFS Server
+
+<li>Create a security group for the Swarm Management Node.  It containers rules for allowing public access to the Swarm Manager Port, SSH port, and Ping. For example:
 
  <table style="width:100%">
   <tr>
@@ -49,9 +50,9 @@ This section describes the procedure for manually deploying a Docker Container S
 
 </table> 
 
-<li> Create a Swarm Management Node VM instance.  Associate it with its security group and key pair. Install Docker on the Swarm Management Node which will be used to launch the docker image of the Multi-Tenant Swarm.
+<li>Create a Swarm Management Node VM instance.  Associate it with its security group and key pair. Install Docker on the Swarm Management Node which will be used to launch the docker image of the Multi-Tenant Swarm.
 
-<li> Create a security group for the Docker nodes.  It containers rules for allowing public access to the SSH port, Ping, and docker auto assigned ports.  The docker auto assigned ports are those ports that docker automatically assigns to containers as there external ports when they are not specifically designated in the docker command.  It also containers a rule for exclusive access to the Docker port from the Swarm Management Node.  Use the Swam Management Node’s public IP.  
+<li>Create a security group for the Docker nodes.  It containers rules for allowing public access to the SSH port, Ping, and docker auto assigned ports.  The docker auto assigned ports are those ports that docker automatically assigns to containers as there external ports when they are not specifically designated in the docker command.  It also containers a rule for exclusive access to the Docker port from the Swarm Management Node.  Use the Swam Management Node’s public IP.  
 
  <table style="width:100%">
   <tr>
@@ -137,14 +138,19 @@ Enable swap cgroup memory limit following those steps from docker  documentation
 
 
 <li> Create a NFS Server.  Associate it with its security group and key pair.
-<li> Install, configure and start the NFS Server:  
-    <b>>apt-get install nfs-kernel-server</b>
+<li> Install, configure and start the NFS Server:
+
+    ``` 
+     >apt-get install nfs-kernel-server
+    ```
+    
      Create a directory that will be used to mount the docker volumes on the docker nodes:
     <b>>sudo mkdir /docker_volumes</b>
      In <b>/etc/hosts/</b> allow access to the docker volume directory to the docker nodes.  For instance:
     <b>/docker_volumes <docker node ip>/24(rw,sync,no_subtree_check,no_root_squash)</b>.
      Start the nfs server:
     <b>>sudo service nfs-kernel-server restart</b>
+
 <li> On the docker nodes install the NFS client and configure it to use the nfs mount point:
     <b>>sudo apt-get install common-nfs</b>
      Mount the docker volumes directory to be backed by nfs:
@@ -216,16 +222,17 @@ Enable swap cgroup memory limit following those steps from docker  documentation
       </code>
       If you want to use a different settings make changes to KeystoneURL:<your keystone URL> and/or quota attributes and restart swarm. By default authHookConf.json resides in the same directory from which the swarm binary is started.
 Best practice is to set SWARM_CONFIG environment variable that will point to the configuration file. For instance:
-     '>export SWARM_CONFIG=~/work/src/github.com/docker/swarm/authHookConf.json'
+     ```
+     >export SWARM_CONFIG=~/work/src/github.com/docker/swarm/authHookConf.json
+     ```
 
     </ul>
 
 <li> Start Multi-Tenant Swarm Manager daemon (without TLS) on the Swarm Management Node.  The Multi-Tenant Swarm docker image resides in the FIWARE Docker Hub repository at [fiware/swarm_multi_tenant](https://hub.docker.com/r/fiware/swarm_multi_tenant/) 
 If token discovery is to be used then add the discovery flag, otherwise use the file flag to point to a file with a list of all the Docker Node public ips and docker ports.  For instance:
-
-   <br>
+   <p>
    <b>>docker run -t -p 2376:2375 -v /tmp/cluster.ipstmp/cluster.ips -e SWARM_AUTH_BACKEND=Keystone -t fiware/swarm_multi_tenant:v0 --debug manage  file:///tmp/cluster.ips</b>
-   </br>
+   </p>
 
 <li> Test the cluster’s remote connectivity by pinging and sshing to all the instances (including the Swarm Management Node). 
 
@@ -242,6 +249,7 @@ for more details on how to use the  service.
 
 ## Getting Docker help
 
+* [FIWARE Docker Container Service Users Guide](https://github.com/fiware-docker/docker-container-service/blob/master/docs/userguide/user-guide.md)
 * [Docker homepage](https://www.docker.com/)
 * [Docker Hub](https://hub.docker.com)
 * [Docker blog](https://blog.docker.com/)
