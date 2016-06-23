@@ -225,7 +225,7 @@ Best practice is to set SWARM_CONFIG environment variable that will point to the
 
     </ul>
 
-<li> Start Multi-Tenant Swarm Manager daemon (without TLS) on the Swarm Management Node.  The Multi-Tenant Swarm docker image resides in the FIWARE Docker Hub repository at [fiware/swarm_multi_tenant](https://hub.docker.com/r/fiware/swarm_multi_tenant/) 
+<li> Start Multi-Tenant Swarm Manager daemon (without TLS) on the Swarm Management Node.  The Multi-Tenant Swarm docker image resides in the FIWARE Docker Hub repository at <b>fiware/swarm_multi_tenant</b>(https://hub.docker.com/r/fiware/swarm_multi_tenant/) 
 If token discovery is to be used then add the discovery flag, otherwise use the file flag to point to a file with a list of all the Docker Node public ips and docker ports.  For instance:
    <p>
    <b>>docker run -t -p 2376:2375 -v /tmp/cluster.ipstmp/cluster.ips -e SWARM_AUTH_BACKEND=Keystone -t fiware/swarm_multi_tenant:v0 --debug manage  file:///tmp/cluster.ips</b>

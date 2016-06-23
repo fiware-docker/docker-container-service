@@ -19,18 +19,18 @@ You can get a FIWARE Account [here](https://account.lab.fiware.org/).
 
 2) *Apply to get a FIWARE Docker Container Service Account*
 
-**TO DO.  We need a FIWARE page for doing this!** 
+contact: nagin@il.ibm.com
 
 
 3) Specify FIWARE Docker Container Service URL as the *DOCKER_HOST* endpoint
 
 In order to prepare your docker client to interact with the FIWARE Docker Container Service you need to export the service's URL to the DOCKER_HOST environment variable or reference the URL in each docker command's -H <services URL>
 
-    >export DOCKER_HOST=130.206.126.17:2376
+    >export DOCKER_HOST=130.206.119.3:2376
 
 or
 
-    >docker -H 130.206.126.17:2376
+    >docker -H 130.206.119.3:2376
 
 4) Set up *Docker configuration file*
 
@@ -95,12 +95,6 @@ All the commands to manage your containers are supported. But they are limited t
 
 See [Docker CLI Support](./docker-cli.md).
 
-
-##Docker API
-To Do
-
-## Docker Compose
-Currently docker compose is not supported because it does not accept headers in the docker configuration file.
 
 ## Getting Docker help
 
