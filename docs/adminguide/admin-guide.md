@@ -94,8 +94,8 @@ This section describes the procedure for manually deploying a Docker Container S
   </table>
 
 <li> Create docker nodes.  Associate them with their security group and ssh keypair. 
-Install Docker on all the Docker Node instances (http://docs.docker.com/engine/installation/).  
-Enable swap cgroup memory limit following those steps from docker  documentation https://docs.docker.com/engine/installation/ubuntulinux/
+[Install Docker on all the Docker Node instances](https://docs.docker.com/v1.11/).  
+Enable swap cgroup memory limit following those steps from [docker documentation]( https://docs.docker.com/v1.11/engine/installation/linux/ubuntulinux/)
 
 <li> Create a security group for the NFS server.  It contains rules for ssh access and for servicing the Docker Nodes.
 
@@ -233,7 +233,7 @@ See the FIWARE Docker Container Service Users Guide for more details on how to u
 * [Docker Hub](https://hub.docker.com)
 * [Docker blog](https://blog.docker.com/)
 * [Docker documentation](https://docs.docker.com/)
-* [Docker Getting Started Guide](https://docs.docker.com/mac/started/)
+* [Docker Getting Started Guide](https://docs.docker.com/v1.11/engine/quickstart/)
 * [Docker code on GitHub](https://github.com/docker/docker)
 * [Docker mailing
   list](https://groups.google.com/forum/#!forum/docker-user)
