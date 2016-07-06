@@ -57,13 +57,13 @@ Run docker commands:
 
     >docker <cmd> 
 
-Keystone token's expire after appproximately one day so you will need to update the configuration file daily.
+Keystone tokens expire after appproximately one day so you will need to update the configuration file daily.
 
 For advanced users of set-docker-conf.sh script see [set-docker-config](./set-docker-config.md).
 
 ## Authorization
 
-Communication with the service is through REST.  Tenant authorization is accomplished by specifying a valid FIWARE keystone token and tenant id in http  headers "X-Auth-Token" and "X-Auth-TenantId".  The token owner must be authorized to use the service.  A request will be rejected if the token has expired or the token is not authorized to access the specified tenant.
+Communication with the service is through REST.  Tenant authorization is accomplished by specifying a valid FIWARE keystone token and tenant id in http headers "X-Auth-Token" and "X-Auth-TenantId".  The token owner must be authorized to use the service.  A request will be rejected if the token has expired or the token is not authorized to access the specified tenant.
 
 ## Managing containers
 
@@ -75,7 +75,7 @@ There are some restictions on docker requests to run and create containers. In b
 
 The port bindings to the host external ports are restricted to those that the docker auto assigns in the ephermal port range which typically ranges from 32768 to 61000.  Thus the -P or --publish-all flags are supported but specifying a value in the host port with the -p or --publish flag are rejected.
 
-Currrently, private network creation is not supported but we intent provide support in the future.
+Currrently, private network creation is not supported but we intend to provide such support in the future.
 
 ## Managing container data
 
@@ -83,7 +83,7 @@ The local host should not be referenced in your docker commands.  Commands that 
 
 ## Managing docker images
 
-Currently the service does note not allow you build or manage images.  However you can pull images from [Docker Hub](https://docs.docker.com/docker-hub).
+Currently the service does not allow you build or manage images.  However you can pull images from [Docker Hub](https://docs.docker.com/docker-hub).
 
 Note: we do plan to support managing images in private repositories in the future.
 
