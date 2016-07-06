@@ -50,6 +50,7 @@ This section describes the procedure for manually deploying a Docker Container S
 
 </table> 
 
+
 <li>Create a Swarm Management Node VM instance.  Associate it with its security group and key pair. Install Docker on the Swarm Management Node which will be used to launch the docker image of the Multi-Tenant Swarm.
 
 <li>Create a security group for the Docker nodes.  It containers rules for allowing public access to the SSH port, Ping, and docker auto assigned ports.  The docker auto assigned ports are those ports that docker automatically assigns to containers as there external ports when they are not specifically designated in the docker command.  It also containers a rule for exclusive access to the Docker port from the Swarm Management Node.  Use the Swam Management Node’s public IP.  
@@ -167,12 +168,10 @@ Enable swap cgroup memory limit following those steps from docker  documentation
     </p>
      
 
-<li> Start the docker engines daemon to listen on the port that was specified when you created the Docker Nodes security group above.  Optionally, you can allow it to also listen on a linux file socket to simplify debug.  For instance:
-    <p>
-    <b>>sudo docker daemon -H unix:///var/run/docker.sock -H tcp://0.0.0.0:2375 –icc=false </b>
-    </p>
-     
-     Another alternative is update <b>/etc/default/docker</b> with 
+<li> The engine daemon will be running as a service on each node
+Configure the engine to listen on the port that was specified when you created the Docker Nodes security group above.  You should also allow it to listen on a linux file socket to simplify debug.  
+
+     Update <b>/etc/default/docker</b> with 
      <p>
     <b>DOCKER_OPTS="-H unix:///var/run/docker.sock -H tcp://0.0.0.0:2375 --icc=false"</b>. 
     </p>
