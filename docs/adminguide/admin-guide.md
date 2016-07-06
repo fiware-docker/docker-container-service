@@ -183,25 +183,10 @@ Configure the engine to listen on the port that was specified when you created t
 <li> Configuring Swarm:
    Environment Variables:
    <ul>
-      <li> <b>SWARM_MULTI_TENANT</b>: if set to false vanila swarm is run without multi-tenancy or name scoping.
       <li> <b>SWARM_AUTH_BACKEND:</b> if set to Keystone then Keystone is used to authenticate and authorization docker requests based on the Authorization Token and Tenant ID in their request header. 
       <li> <b>SWARM_MEMBERS_TENANT_ID</b>: contains the tenant id whose members are eligible to use the service. If not set then any valid token tenant id may use the service. SWARM_MEMBERS_TENANT_ID is only valid when SWARM_AUTH_BACKEND is set to Keystone.
       <li> <b>SWARM_ADMIN_TENANT_ID</b>: contains the id of the tenant that may run docker commands as admin. 
-      <li> <b>SWARM_FLAVORS_ENFORCED</b>: Flavors enforcement only occurs on docker create.  Docker users can only specify resource combinations that appear in one the predefined flavors. Note there is little flexibility the specified resources must exactly match one of the predefined flavors. Also the set of favors are for all tenants.  By default flavors enforcement are disabled.  However, the swarm administrator can enable it by setting SWARM_FLAVORS_ENFORCED  to true. 
-      <li> <b>SWARM_FLAVORS_FILE</b>: Flavors are defined by the swarm administrator in a json file which containers a map of the resource combinations that are enforced.  This is an example:
-      <p>
-      <code>
-      {   "default":
-         {    "Memory": 4,    
-           },   
-         "small":
-         {    "Memory": 64,    
-          } 
-      }
-      </code>
-      <p>
-       By default the json file resides in ./flavors.json, but the administrator can use  SWARM_FLAVORS_FILE to specify another path. The properties file is only read once at initialization.  If the administrator wants to change the flavors it is required to restart swarm.
-       
+
       <li> <b>SWARM_CONFIG</b>: The	Swarm configuration file, authHookConf.json, is a json file that contains the Keystone URL and tenant memory quota limits.
       <p>
       <code>
