@@ -191,10 +191,9 @@ Configure the engine to listen on the port that was specified when you created t
       <p>
       <code>
       {
-         "TenancyLabel":"com.ibm.tenant.0",
+         "TenancyLabel":"fiware.label.tenant.0",
          "KeystoneUrl":"http://cloud.lab.fi-ware.org:4730/v2.0/",
          "KeyStoneXAuthToken":"ADMIN",
-         "AuthTokenHeader":"X-Auth-Token",
          "quotas":{
                 "Memory": 128
           }
