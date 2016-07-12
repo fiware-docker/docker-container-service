@@ -22,15 +22,15 @@ You can get a FIWARE Account [here](https://account.lab.fiware.org/).
 contact: nagin@il.ibm.com
 
 
-3) Specify FIWARE Docker Container Service URL as the *DOCKER_HOST* endpoint
+3) Specify FIWARE Docker Container Service URL, i.e tcp://docker.lab.fiware.org:2376, as the *DOCKER_HOST* endpoint
 
 In order to prepare your docker client to interact with the FIWARE Docker Container Service you need to export the service's URL to the DOCKER_HOST environment variable or reference the URL in each docker command's -H <services URL>
 
-    >export DOCKER_HOST=130.206.119.3:2376
+    >export DOCKER_HOST=tcp://docker.lab.fiware.org:2376
 
 or
 
-    >docker -H 130.206.119.3:2376
+    >docker -H tcp://docker.lab.fiware.org:2376
 
 4) Set up *Docker configuration file*
 
