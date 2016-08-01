@@ -23,7 +23,7 @@ These docker cli commands are supported:
 - pause
 - port
 - ps
-- pull (currently not supported but we are working on it)
+- pull 
 - rename (currently not supported but we are working on it)
 - restart
 - rm
@@ -36,10 +36,10 @@ These docker cli commands are supported:
 - update
 - unpause
 - version
-- volume create  (currently not supported but we are working on it)
-- volume inspect (currently not supported but we are working on it)
-- volume ls (currently not supported but we are working on it)
-- volume rm (currently not supported but we are working on it)
+- volume create  
+- volume inspect 
+- volume ls 
+- volume rm 
 - wait (currently not supported but we are working on it)
 
 These docker run flags are supported, but there may be some restrictions:
@@ -129,3 +129,110 @@ These docker cli commands are not supported:
 - push
 - save
 - tag
+
+## Examples
+###Orion
+Create Data Volume
+```
+docker --config $DOCKER_CONFIG1 create -v /data/db --name mongodbdata mongo:3.2 /bin/echo "Data-only container for mongodb."
+b9aa0d6cb3d0082f106248cc5afa7978b6ff7921b8a12a402bcf748e1b1ac503
+
+```
+Use –volumes-from to reference data volume
+```
+docker --config $DOCKER_CONFIG1 run -d --volumes-from mongodbdata --name mongodb mongo:3.2 --nojournal
+d6ab99615391032e7ed6d9f1b834686d60caee32a933796d6253a9efb201ec15
+
+```
+Reference data base container with --link
+```
+docker --config $DOCKER_CONFIG1 run -d --link mongodb  -p :1026 --name orion fiware/orion:latest -dbhost mongodb
+52cab61c971806114f68019344734015c1ca7b7e072e1c1a6c51df037c95461d
+```
+Access orion
+port=$(docker --config $DOCKER_CONFIG1 port orion 1026)
+curl ${port}/version
+{
+  "orion" : {
+  "version" : "0.28.0-next",
+  "uptime" : "0 d, 0 h, 4 m, 37 s",
+  "git_hash" : "8c2bfb296628f106bebe5988a48d12efda64dede",
+  "compile_time" : "Sat Mar 19 23:24:17 UTC 2016",
+  "compiled_by" : "root",
+  "compiled_in" : "838a42ae8431"
+}
+}
+```
+curl ${port}/v2/entities
+[]
+curl ${port}/entities -s -S --header 'Content-Type: application/json' -X POST -d @- <<EOF
+{
+  "id": "Room2",
+  "type": "Room",
+  "temperature": {
+    "value": 23,
+    "type": "Number"
+  },
+  "pressure": {
+    "value": 720,
+    "type": "Number"
+  }
+}
+EOF
+curl ${port}/v2/entities/Room2 -s -S --header 'Accept: application/json' | python -mjson.tool
+curl ${port}/v2/entities/Room2 | python -mjson.tool
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   140  100   140    0     0  10150      0 --:--:-- --:--:-- --:--:-- 10769
+{
+    "id": "Room2",
+    "pressure": {
+        "metadata": {},
+        "type": "Number",
+        "value": 720
+    },
+    "temperature": {
+        "metadata": {},
+        "type": "Number",
+        "value": 23
+    },
+    "type": "Room"
+}
+```
+Demonstate that data persists in mongodbdata.
+Remove everything accept mongodbdata  and then run again.
+```
+docker --config $DOCKER_CONFIG1 rm -fv orion
+docker --config $DOCKER_CONFIG1 rm -fv mongodb
+docker --config ps -a
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS               NAMES
+1fdec401e212        mongo:3.2           "/entrypoint.sh /bin/"   41 minutes ago      Created                                 rcc-hrl-kvg-588/mongodbdata
+
+```
+Bring orion and mongodb up again.
+````
+nagin@rcc-hrl-kvg-558:~/compose_test/orion$ docker run -d --volumes-from mongodbdata --name mongodb mongo:3.2 --nojournal
+ebc4c11c273a010437cf6d5a02442c327e0e655658d2132b0cebf212750bae11
+nagin@rcc-hrl-kvg-558:~/compose_test/orion$ docker run -d --link mongodb  -p :1026 --name orion fiware/orion:latest -dbhost mongodb
+70ee33e22b44b948e4bfbc7ebd7a7d29abafd0f68a56376c91ca4161b98b435b
+nagin@rcc-hrl-kvg-558:~/compose_test/orion$ port=$(docker port orion 1026)
+nagin@rcc-hrl-kvg-558:~/compose_test/orion$ curl ${port}/v2/entities/Room2 | python -mjson.tool
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   140  100   140    0     0  15140      0 --:--:-- --:--:-- --:--:-- 15555
+{
+    "id": "Room2",
+    "pressure": {
+        "metadata": {},
+        "type": "Number",
+        "value": 720
+    },
+    "temperature": {
+        "metadata": {},
+        "type": "Number",
+        "value": 23
+    },
+    "type": "Room"
+}
+```
+
