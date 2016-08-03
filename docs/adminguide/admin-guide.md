@@ -1,6 +1,6 @@
 <!--[metadata]>
 +++
-title = "FIWARE Docker Container Service Installation and Administration Guide"
+title = "FIWARE Docker Container Service (FDCS) Installation and Administration Guide"
 description = "FIWARE Docker Container Service Installation and Administration Guide home page"
 keywords = ["docker, introduction, documentation, about, technology, docker.io, user, guide, user's, manual, platform, framework, virtualization, home,  intro"]
 [menu.main]
@@ -10,7 +10,7 @@ parent = "mn_fun_docker"
 
 #FIWARE Docker Container Service Installation and Administration Guide
 ##Deployment Steps
-This section describes the procedure for manually deploying a Docker Container Service on OpenStack.  In brief, the Docker Container Service is a Multi-Tenant Swarm cluster.  We refer to the node where the Multi-Tenant Swarm manager is running as the Swarm Management Node and nodes where the docker engines are running as the Docker Nodes.  The following steps are required:
+This section describes the procedure for manually deploying a FIWARE Docker Container Service (FDCS) on OpenStack.  In brief, the FDCS is a Multi-Tenant Swarm cluster.  We refer to the node where the Multi-Tenant Swarm manager is running as the Swarm Management Node and nodes where the docker engines are running as the Docker Nodes.  The following steps are required:
 
 <ol>
 <li>Create an SSH key pair that will be used to access the Swarm Management Node, the Docker Nodes in the Swarm cluster, and NFS Server
@@ -181,38 +181,72 @@ Configure the engine to listen on the port that was specified when you created t
     </p>
 
 <li> Configuring Swarm:
-   Environment Variables:
+   FDCS can be configured by setting its environment variables. FDCS environment variables are briefly described below:
    <ul>
-      <li> <b>SWARM_AUTH_BACKEND:</b> if set to Keystone then Keystone is used to authenticate and authorization docker requests based on the Authorization Token and Tenant ID in their request header. 
+      <li> <b>SWARM_ADMIN_TENANT_ID</b>: contains the id of the tenant that may run docker commands as admin. Admin is authorized to manage docker resources, including tenant containers, volumes, network, etc., and issue all docker requests without any filtering.
+       
+      <li> <b>SWARM_APIFILTER_FILE</b>: may point to a json file that describes the docker commands an installation of the service wants to filter out. If no file is pointed to it defaults to apifilter.json in the directory where swarm is started. 
+      
+Currently there is only support for a "disableapi" array which
+contains a comma separated list of commands to disable.
+This is an example how an installation could disable network support:       
+<pre><code>
+{
+  "disableapi": [ networkslist, networkinspect, networkconnect, networkdisconnect, networkcreate, networkdelete ]
+}
+</pre></code>      
+      
+      <li> <b>SWARM_AUTH_BACKEND:</b> if set to "Keystone" then Keystone is used to authenticate Tenants that docker requests based on the Authorization Token and Tenant ID in their request header.
+      
+      <li> <b>SWARM_ENFORCE_QUOTA:</b> if set to "true" then the Multi-Tenant Swarm Quota feature is enabled otherwise it is disabled.  See <b>SWARM_QUOTA_FILE</b> for how to specify quotas.
+      
+      <li> <b>SWARM_FLAVORS_ENFORCED:</b> if set to "true" then the Multi-Tenant Swarm Flavors feature is enabled otherwise it is disabled. The  flavors specification is embodied in a json file which contains a map describing the valid resource combinations that can appear in create container requests.  Currently, Memory is the only resource that can be specified as a flavor. The Memory resource should be specified as a whole number which represents  megabytes of memory.   See <b>SWARM_FLAVORS_FILE</b> for how to specify flavors.
+      
+      <li> <b>SWARM_FLAVORS_FILE:</b> if SWARM_FLAVORS_ENFORCED is set to "true" then SWARM_FLAVORS_FILE points to a file with the flavors specification.  If there is no file pointed to then it defaults to flavors.json in the directory where swarm is started. 
+      
+The specification must contain a "default" flavor.  When the create container parameters do not match any of the specified flavors, the default flavor is applied to the create container replacing its original parameters. This is an example of the json flavors specification that is shipped with Multi-Tenant Swarm:       
+<pre><code>       
+{
+  "default":{
+   "Memory": 64
+  },
+  "medium":{
+   "Memory": 128
+  },
+  "large":{
+   "Memory": 256
+  }
+
+}
+</code></pre>
+In the above flavors specification example there are three flavors default, medium, and large.  <i>default</i> describes 64 megabytes of memory. <i>medium</i> describes 128 megabytes of memory. <i>large</i> describes 256 megabytes of memory. This means that a create container is limited to specifying its memory as 64MB, 128MB, or 256MB. If none is specified then the system will apply the default, i.e. 64MB. 
+
+      <li> <b>SWARM_KEYSTONE_URL:</b> if SWARM_AUTH_BACKEND is set to "Keystone" then SWARM_KEYSTONE_URL must specify Keystone's URL, e.g. http://cloud.lab.fi-ware.org:4730/v2.0/.  
+      
+      <li> <b>SWARM_NETWORK_AUTHORIZATION:</b> if set to "false" then the Multi-Tenant Swarm Network Authorization feature is disabled otherwise it is enable.
+      
       <li> <b>SWARM_MEMBERS_TENANT_ID</b>: contains the tenant id whose members are eligible to use the service. If not set then any valid token tenant id may use the service. SWARM_MEMBERS_TENANT_ID is only valid when SWARM_AUTH_BACKEND is set to Keystone.
-      <li> <b>SWARM_ADMIN_TENANT_ID</b>: contains the id of the tenant that may run docker commands as admin. 
+      
+      <li> <b>SWARM_MULTI_TENANT:</b> if set to "false" then the Multi-Tenant Swarm is disabled otherwise Multi-Tenant Swarm is enabled. When Multi-Tenant Swarm is disabled the result is that the service is launched as vanilla Swarm. Generally disabling Multi-Tenant Swarm is used for debugging purposes to discover if a bug is related to the swarm docker configuration or to a Multi-Tenant Swarm feature.
+      
+        <li> <b>SWARM_QUOTA_FILE:</b> if SWARM_ENFORCE_QUOTA is set to "true" then SWARM_QUOTA_FILE may specify the quota specification.  If there is no file pointed to it defaults to quota.json in the directory where swarm is started.
+Currently quota support is limited to tenant memory consumption and it is the same for all tenants.  This is an example a json quota specification:
+<pre><code>
+{
+   "Memory": 300
+}
+</code></pre>
 
-      <li> <b>SWARM_CONFIG</b>: The	Swarm configuration file, authHookConf.json, is a json file that contains the Keystone URL and tenant memory quota limits.
-      <p>
-      <code>
-      {
-         "TenancyLabel":"fiware.label.tenant.0",
-         "KeystoneUrl":"http://cloud.lab.fi-ware.org:4730/v2.0/",
-         "KeyStoneXAuthToken":"ADMIN",
-         "quotas":{
-                "Memory": 128
-          }
-      }
-      </code>
-      </p>
-      If you want to use a different settings make changes to KeystoneURL:<your keystone URL> and/or quota attributes and restart swarm. By default authHookConf.json resides in the same directory from which the swarm binary is started.
-Best practice is to set SWARM_CONFIG environment variable that will point to the configuration file. For instance:
-     <p>
-     <b>>export SWARM_CONFIG=~/work/src/github.com/docker/swarm/authHookConf.json</p>
-     </p>
-
+      
     </ul>
 
 <li> Start Multi-Tenant Swarm Manager daemon (without TLS) on the Swarm Management Node.  The Multi-Tenant Swarm docker image resides in the FIWARE Docker Hub repository at <b>fiware/swarm_multi_tenant</b>(https://hub.docker.com/r/fiware/swarm_multi_tenant/) 
 If token discovery is to be used then add the discovery flag, otherwise use the file flag to point to a file with a list of all the Docker Node public ips and docker ports.  For instance:
-   <p>
-   <b>>docker run -t -p 2376:2375 -v /tmp/cluster.ipstmp/cluster.ips -e SWARM_AUTH_BACKEND=Keystone -t fiware/swarm_multi_tenant:v0 --debug manage  file:///tmp/cluster.ips</b>
-   </p>
+   <pre>
+   <code>
+   >docker run -t -p 2376:2375 -v /tmp/cluster.ipstmp/cluster.ips -e SWARM_AUTH_BACKEND=Keystone -e SWARM_KEYSTONE_URL=http://cloud.lab.fi-ware.org:4730/v2.0/ -t fiware/swarm_multi_tenant:v0 --debug manage  file:///tmp/cluster.ips
+   </code>
+   </pre>
 
 <li> Test the cluster’s remote connectivity by pinging and sshing to all the instances (including the Swarm Management Node). 
 
