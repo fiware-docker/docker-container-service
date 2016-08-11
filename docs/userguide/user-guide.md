@@ -19,12 +19,12 @@ You can get a FIWARE Account [here](https://account.lab.fiware.org/).
 
 2) *Apply to get a FIWARE Docker Container Service Account*
 
-contact: [nagin@il.ibm.com](mailto:nagin@il.ibm.com)
+contact: [nagin@il.ibm.com](mailto:nagin@il.ibm.com?subject="FDCS Application")
 
 
 3) *Set up your local docker client environment*
 
-⋅⋅* Specify FIWARE Docker Container Service URL, i.e tcp://docker.lab.fiware.org:2376, as the *DOCKER_HOST* endpoint
+* Specify FIWARE Docker Container Service URL, i.e tcp://docker.lab.fiware.org:2376, as the *DOCKER_HOST* endpoint
 
 In order to prepare your docker client to interact with the FIWARE Docker Container Service you need to export the service's URL to the DOCKER_HOST environment variable or reference the URL in each docker command's -H <services URL>
 
@@ -34,7 +34,7 @@ or
 
     >docker -H tcp://docker.lab.fiware.org:2376
 
-⋅⋅* Set up *Docker configuration file
+* Set up *Docker configuration file
 
 The config.json file describes additional headers to include in the docker REST commands sent to the docker container servicer.  The the headers are X-Auth-Token and X-Auth-TenantId. 
 
@@ -50,15 +50,15 @@ The *config.json* takes the following form:
 
 The default location of the configuration file is *$HOME/.docker*.  But you can use the docker --config flag to indicate another directory. 
 
-There are many ways to get your keystone token id and tenant id.  For instance you could use curl.  But we have provided and a script called [set-docker-config.sh](./set-docker-config.md) that makes creating your config.json file easy.
+There are many ways to get your keystone token id and tenant id.  For instance you could use curl.  But we have provided and a script called [set-docker-config.bash](./set-docker-config.md) that makes creating your config.json file easy.
   
 This is an example of using the script to create a docker configuration file at .docker/config.json: 
 
-    >set_docker_conf.sh -t <fiware-tenant-name> -u <fiware-user-name> -p <user-password>
+    >set_docker_conf.bash -t <fiware-tenant-name> -u <fiware-user-name> -p <user-password>
 
 Keystone tokens expire after appproximately one day so you will need to update the configuration file daily.
 
-For advanced users of set-docker-conf.sh script see [set-docker-config](./set-docker-config.md).
+For more information about the script see the [set_docker_config readme](./set-docker-config.md).
 
 
 4) *Run docker commands:*
