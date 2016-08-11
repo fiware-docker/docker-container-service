@@ -50,6 +50,8 @@ In step 6 the Service's multi-tenant swarm sends a ''Keystone list tenants'' req
 In step 8 the Service's multi-tenant swarm checks whether the user's tenant id is in tenant list.  Once the the tenant has been authorized swarm ensures
 that the tenants are isolated from each other by ensuring that each tenant can only manage and link to their own containers, volumes, and networks.
 
+<img src="https://github.com/fiware-docker/docker-container-service/blob/master/figs/multi-tenant_Swarm_with_Keystone_Authentication.png" alt="text" />
+
 ![](https://github.com/fiware-docker/docker-container-service/blob/master/figs/multi-tenant_Swarm_with_Keystone_Authentication.png?raw=true)
 
 [FDCS User Guide](https://github.com/fiware-docker/docker-container-service/blob/master/docs/userguide/user-guide.md)  describes in more detail how the docker client may interact with the service.
