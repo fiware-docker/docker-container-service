@@ -19,7 +19,7 @@ You can get a FIWARE Account [here](https://account.lab.fiware.org/).
 
 2) *Apply to get a FIWARE Docker Container Service Account*
 
-contact: [nagin@il.ibm.com](mailto:nagin@il.ibm.com?subject="FDCS Application")
+contact: [nagin@il.ibm.com](mailto:nagin@il.ibm.com?subject=FDCS%20Application)
 
 
 3) *Set up your local docker client environment*
@@ -34,7 +34,7 @@ or
 
     >docker -H tcp://docker.lab.fiware.org:2376
 
-* Set up *Docker configuration file
+* Set up *Docker configuration file*
 
 The config.json file describes additional headers to include in the docker REST commands sent to the docker container servicer.  The the headers are X-Auth-Token and X-Auth-TenantId. 
 
