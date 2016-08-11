@@ -42,10 +42,14 @@ When the user's docker client is the docker cli, they should update the docker c
 When the Service receives a docker request it will contact FIWARE's Keystone Identity Manager to authorize the tenant's request based on the headers' token and tenant id.
 
 The figure below illustrates this process.  
+
 In step 1 the user sends an ''Keystone Authenticate'' request to Keystone describing a FIWARE user which is a member of a tenant.
+
 In step 2,3 Keystone generates a token and returns it to the user. The user then updates their docker config.json file with the Keystone token and tenant id.
 The use then invokes a docker cli command which transparently sends docker REST requests (including the token and tenant id) to the Service.
+
 In step 6 the Service's multi-tenant swarm sends a ''Keystone list tenants'' request to Keystone which returns a list of tenants to which the token is authorized to access. 
+
 In step 8 the Service's multi-tenant swarm checks whether the user's tenant id is in tenant list.  Once the the tenant has been authorized swarm ensures that the tenants are isolated from each other by ensuring that each tenant can only manage and link to their own containers, volumes, and networks.
 
 ![](figs/multi-tenant_Swarm_with_Keystone_Authentication.png?raw=true)
@@ -69,6 +73,7 @@ In the illustration below we show a FIWARE Docker Container Service's cluster of
 ![](figs/FDCS_Tenant_Isolation.png?raw=true)
 
 
-For details about how to use FDCS see the [FDCS User Guide](doc/userguide/user-guide.md).
-For details about how to administer and install on-premise FDCS see the [FDCS Admin and Installation Guide]](doc/adminguide/admin-guide.md).
+For details about how to use FDCS see the [FDCS User Guide](docs/userguide/user-guide.md).
+
+For details about how to administer and install an on-premise FDCS see the [FDCS Admin and Installation Guide](docs/adminguide/admin-guide.md).
 
