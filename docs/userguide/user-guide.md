@@ -19,10 +19,12 @@ You can get a FIWARE Account [here](https://account.lab.fiware.org/).
 
 2) *Apply to get a FIWARE Docker Container Service Account*
 
-contact: nagin@il.ibm.com
+contact: [nagin@il.ibm.com](mailto:nagin@il.ibm.com)
 
 
-3) Specify FIWARE Docker Container Service URL, i.e tcp://docker.lab.fiware.org:2376, as the *DOCKER_HOST* endpoint
+3) *Set up your local docker client environment*
+
+⋅⋅* Specify FIWARE Docker Container Service URL, i.e tcp://docker.lab.fiware.org:2376, as the *DOCKER_HOST* endpoint
 
 In order to prepare your docker client to interact with the FIWARE Docker Container Service you need to export the service's URL to the DOCKER_HOST environment variable or reference the URL in each docker command's -H <services URL>
 
@@ -32,7 +34,7 @@ or
 
     >docker -H tcp://docker.lab.fiware.org:2376
 
-4) Set up *Docker configuration file*
+⋅⋅* Set up *Docker configuration file
 
 The config.json file describes additional headers to include in the docker REST commands sent to the docker container servicer.  The the headers are X-Auth-Token and X-Auth-TenantId. 
 
@@ -50,16 +52,43 @@ The default location of the configuration file is *$HOME/.docker*.  But you can 
 
 There are many ways to get your keystone token id and tenant id.  For instance you could use curl.  But we have provided and a script called [set-docker-config.sh](./set-docker-config.md) that makes creating your config.json file easy.
   
-Create default docker configuration file, .docker/config.json, for default:
+This is an example of using the script to create a docker configuration file at .docker/config.json: 
 
     >set_docker_conf.sh -t <fiware-tenant-name> -u <fiware-user-name> -p <user-password>
-Run docker commands:
-
-    >docker <cmd> 
 
 Keystone tokens expire after appproximately one day so you will need to update the configuration file daily.
 
 For advanced users of set-docker-conf.sh script see [set-docker-config](./set-docker-config.md).
+
+
+4) *Run docker commands:*
+
+    > docker run hello-world
+    Hello from Docker.
+    This message shows that your installation appears to be working correctly.
+
+    To generate this message, Docker took the following steps:
+     1. The Docker client contacted the Docker daemon.
+     2. The Docker daemon pulled the "hello-world" image from the Docker Hub.
+     3. The Docker daemon created a new container from that image which runs the
+        executable that produces the output you are currently reading.
+     4. The Docker daemon streamed that output to the Docker client, which sent it
+        to your terminal.
+
+     To try something more ambitious, you can run an Ubuntu container with:
+      $ docker run -it ubuntu bash
+
+    Share images, automate workflows, and more with a free Docker Hub account:
+     https://hub.docker.com
+
+    For more examples and ideas, visit:
+     https://docs.docker.com/userguide/
+ 
+    > docker ps -a
+    CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS                      PORTS                             NAMES
+	c1d22839920e        hello-world         "/hello"                 20 seconds ago      Exited (0) 17 seconds ago                                     docker-host-2
+    > rm c1d22839920e
+
 
 ## Authorization
 
