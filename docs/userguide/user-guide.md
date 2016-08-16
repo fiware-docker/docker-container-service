@@ -13,9 +13,9 @@ parent = "mn_fun_docker"
 The FIWARE Docker Container Service exposes the docker API so that FIWARE users can leverage their local docker clients to remotely manage their docker containers on the FIWARE Lab. This document describes how to use the service.
 
 ##Quick Start
-1) *Apply to get a FIWARE account*
+1) *Apply to get a FIWARE Lab account*
 
-You can get a FIWARE Account [here](https://account.lab.fiware.org/).
+You can get a FIWARE Lab account [here](https://account.lab.fiware.org/).
 
 2) *Apply to get a FIWARE Docker Container Service Account*
 
@@ -90,39 +90,61 @@ For more information about the script see the [set_docker_config readme](./set-d
     > rm c1d22839920e
 
 
-## Authorization
+## Authentication and Authorization
 
-Communication with the service is through REST.  Tenant authorization is accomplished by specifying a valid FIWARE keystone token and tenant id in http headers "X-Auth-Token" and "X-Auth-TenantId".  The token owner must be authorized to use the service.  A request will be rejected if the token has expired or the token is not authorized to access the specified tenant.
+Communication with the service is through REST.  Tenant authentication and authorization is accomplished by specifying a valid FIWARE keystone token and tenant id in http headers "X-Auth-Token" and "X-Auth-TenantId".  The token is authenticated by Keystone, its owner must be associated with the tenant id, and token owner must be authorized to use the service.  A request will be rejected if the above conditions are not met or the token has expired.
+
+## Multi-Tenant Isolation
+
+FDCS supports mulit-tenant isolation. FDCS allows many authorized FIWARE tenants to use the FDCS cluster, however the tenants are isolated from each other.  Tenants can create docker resources, i.e. containers, networks, volumes, etc., but only the tenant that creates a docker resource may manage the resource.  Tenants can not even see other tenants' resource let alone manage them.
+
+## Multi-Tenant Name Scoping
+
+FDCS supports mulit-tenant name scoping.  This means tenants can assign the same name to their docker resources without interfering with each other.  For instants two tenants could create a container with the same name. They can also reference their resources by name and FDCS will ensure that the reference is to the resource owned by the tenant.
 
 ## Managing containers
 
-Docker requests to manage your containers are supported, but they are limited to containers that belong to the specified tenant.  For instance ps will only list continainers associated with the specificed tenant.
+All docker requests to manage containers are supported, but they are limited to containers that belong to the specified tenant.  For instance ps will only list containers created by the specified tenant.
 
-There are some restictions on docker requests to run and create containers. In brief the restrictions are related to the service isolating tenants from each other and from the docker host.  Thus in addition to limiting a tenant to only managing their own containers, tenants are prevented from disproportionately utilize resources. 
+There are some restictions on docker requests to run and create containers. In brief the restrictions are related to the service isolating tenants from each other and from the docker host.  Thus in addition to limiting a tenant to only managing their own containers, tenants are prevented from disproportionately over utilizing resources. 
 
 ## Networking containers
+### User Defined Networks
+FDCS supports user defined networks and their management.  Currently it only supports bridge type networks.  In the future it will support overlay networks. Containers on the same network can securely communicate with each other, but those on different networks are isolated from each.  Each network has its own DNS which allows communication between containers on the same network using container names.
 
-The port bindings to the host external ports are restricted to those that the docker auto assigns in the ephermal port range which typically ranges from 32768 to 61000.  Thus the -P or --publish-all flags are supported but specifying a value in the host port with the -p or --publish flag are rejected.
+### linking containers
+FDCS supports the docker link feature.  The docker link feature allows containers to discover each other and securely transfer information about one container to another container.  However, links are being deprecated by docker so it is preferred to leverage user defined networks when networking your containers.
 
-Currrently, private network creation is not supported but we intend to provide such support in the future.
+### host port mapping
+Host port mapping allows public access to containers.  Host ports may be bound to a container ports so that the container listens for incoming traffic on its port while the actual traffic is being directed at a host port. Port bindings are restricted to those host ports that the docker auto assigns in the ephermal port range which typically ranges from 32768 to 61000.  Thus the -P or --publish-all flags are supported but specifying a value in the host port with the -p or --publish flag are rejected.
+
 
 ## Managing container data
+### Data Volume Containers
+FDCS supports *Data Volume Containers* and their management.  If you have some persistent data that you want to share between containers, or want to use from non-persistent containers, you can create a named *Data Volume Container*. Containers that want to share the data can reference the *Data Volume Container* with the create volume --volumes-from flag. *Data Volume Container* data persists even when the containers that reference the data volume container are removed.
 
-The local host should not be referenced in your docker commands.  Commands that reference the local host will be rejected.  Thus a command that references a docker host directory in the -v or --volume flags is rejected.
+### User Defined Volumes
+FDCS supports user defined volumes and their management.  Multiple containers can use the same volume in the same time period. This is useful if two containers need access to shared data. For example, if one container writes and the other reads the data. User defined volume data persist even when the containers that reference the volume are removed. Further since FDCS mounts user defined volumes on a NFS mount point the volumes are shared by all the host in the FDCS cluster. Thus, containers on different hosts can easily share data.  
+### host volume mounts
+The docker create container command may mount a host volume with it's -v or --volume flags.  However, FDCS does not allow this, since the user can not have direct access to FDCS's docker hosts. Thus a command that attempts to mount a host volume in the -v or --volume flags is rejected. 
+
+Typically host volume mounts are used to configure a container from files in the host file system. We have seen that most container configurations can be resolved with environment variables and/or using commands, like wget, to fetch the configuration data from an internet repository.  Another solution is to create a custom image locally and push it to docker hub from where it can be pulled.   
 
 ## Managing docker images
 
-Currently the service does not allow you build or manage images.  However you can pull images from [Docker Hub](https://docs.docker.com/docker-hub).
+Currently the service does not allow you to build or manage images.  However you can pull images from [Docker Hub](https://docs.docker.com/docker-hub).
 
 Note: we do plan to support managing images in private repositories in the future.
 
 
 ##Docker CLI
-Once you prepare your docker client as described in [Quick Start](./user-guide.md##Quick Start) you can use
-the [Docker CLI](https://docs.docker.com/engine/reference/commandline/cli/).
-All the commands to manage your containers are supported. But they are limited to containers that belonging to the tenant specified in your config.json file.  So ps will only list containers belonging to the specified tenant. Likewise, there are some restictions on docker run and create.
+Once you prepare your docker client as described in [Quick Start](./user-guide.md##Quick Start) you can use the [Docker CLI](https://docs.docker.com/engine/reference/commandline/cli/). All the commands to manage your containers are supported. But they are limited to containers that belonging to the tenant specified in your config.json file.  So ps will only list containers belonging to the specified tenant. Likewise, there are some restictions on docker run and create.
 
 See [Docker CLI Support](./docker-cli.md).
+
+##docker-compose
+Once you prepare your docker client as described in [Quick Start](./user-guide.md##Quick Start) you can use docker-compose. docker-compose allows you assemble docker containers to create services.  Like docker cli, FDCS supports most of the docker-compose commands in the docker-compose.yml file deploy docker services.
+
 
 
 ## Getting Docker help
