@@ -36,13 +36,13 @@ or
 
 * Set up *Docker configuration file*
 
-The config.json file describes additional headers to include in the docker REST commands sent to the docker container servicer.  The the headers are X-Auth-Token and X-Auth-TenantId. 
+The config.json file describes additional headers to include in the docker REST commands sent to the docker container servicer.  FDCS requires headers X-Auth-Token and X-Auth-TenantId. X-Auth-Token references the user's Keystone token. X-Auth-TenantId references user's Keystone tenant id.
 
 The *config.json* takes the following form:
 
     { "HttpHeaders":
       {
-        "X-Auth-Token": <keystone token id>,      
+        "X-Auth-Token": <keystone token>,      
         "X-Auth-TenantId": <keystone tenant id>    
       }
     }
@@ -145,6 +145,9 @@ See [Docker CLI Support](./docker-cli.md).
 ##docker-compose
 Once you prepare your docker client as described in [Quick Start](./user-guide.md##Quick Start) you can use docker-compose. docker-compose allows you assemble docker containers to create services.  Like docker cli, FDCS supports most of the docker-compose commands in the docker-compose.yml file deploy docker services.
 
+Note: docker-compose does not support the docker cli --config flag, so the ~/.docker/config.json must container headers X-Auth-Token and X-Auth-TenantId. Likewise, docker-compose does not support the docker cli -H flag so the environment variable must be set to tcp://docker.lab.fiware.org:2376.
+
+See [docker-compose Support](./docker-compose.md).
 
 
 ## Getting Docker help
