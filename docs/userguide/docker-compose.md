@@ -1,10 +1,10 @@
 #Docker Compose
 
-Once you prepare your docker client as described in the user guide's [Quick Start](./user-guide.md##Quick Start) you can use the [Docker Compose](https://docs.docker.com/compose/).  We support Docker-Compose 1.6.2 and above.
+Once you prepare your docker client as described in the user guide's [Quick Start](./user-guide.md##Quick Start) you can use [Docker Compose](https://docs.docker.com/compose/). We support Docker-Compose 1.6.2 and above.
 
-Note: docker-compose does not support the docker cli --config flag, so the ~/.docker/config.json must container headers X-Auth-Token and X-Auth-TenantId. Likewise, docker-compose does not support the docker cli -H flag so the environment variable must be set to tcp://docker.lab.fiware.org:2376.
+Note: docker-compose does not support the docker cli --config flag, so the ~/.docker/config.json must contain headers X-Auth-Token and X-Auth-TenantId. Likewise, docker-compose does not support the docker cli -H flag so the environment variable must be set to tcp://docker.lab.fiware.org:2376.
 
-The [docker compose cli](https://docs.docker.com/compose/reference/) is supported.
+The [docker compose command-line](https://docs.docker.com/compose/reference/) is supported.
 
 These docker compose commands are supported:
 - build: NA
@@ -27,7 +27,7 @@ These docker compose commands are supported:
 - unpause: supported
 - up: supported
 
-There are two versions of the [docker-compose.yml file](https://docs.docker.com/compose/compose-file/) format. Version 1 is the legacy format, which does not support the volume_driver or networks tag.  Currently FDCS does not support Version 2. Until version 2 is supported you won't be able declare named networks. Most of the version 2 docker-compose tags are supported, but they may be restricted in a similar manner to the restriction applied to the docker CLI. For instance, the volumes tag is supported, but FDCS does not permit reference to the host filesystem. User defined volumes can be referenced in the in the volumes tag. 
+There are two versions of the [docker-compose.yml file](https://docs.docker.com/compose/compose-file/) format. Version 1 is the legacy format, which does not support the volume_driver or networks tag.  Currently FDCS does not support Version 2. Until version 2 is supported you won't be able declare named volumes, networks, and build argument. Most of the version 1 docker-compose tags are supported, but they may be restricted in a similar manner to the restriction applied to the docker CLI. For instance, the volumes tag is supported, but FDCS does not permit reference to the host filesystem. User defined volumes can be referenced in the in the volumes tag. 
 
 ## Examples
 ### Orion and Mongodb
