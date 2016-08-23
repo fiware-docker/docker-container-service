@@ -2,7 +2,7 @@ site_name: Fiware-Docker-Container-Service
 site_url: https://fiware-docker-container-service.readthedocs.org
 repo_url: https://github.com/fiware-docker/docker-container-service.git
 site_description: FIWARE Simple Docker Hosting Documentation
-#docs_dir: docs
+docs_dir: docs
 site_dir: html
 markdown_extensions: [toc,fenced_code]
 use_directory_urls: false
@@ -10,6 +10,6 @@ theme: readthedocs
 extra_css: ["https://fiware.org/style/fiware_readthedocs.css"]
 pages:
 #  - Home: README.md
-  - 'FDCS Installation & Administration Manual': ./docs/adminguide/admin-guide.md
-  - 'FDCS User & Programmers Manual': ./docs/userguide/user-guide.md
+  - 'FDCS Installation & Administration Manual': adminguide/admin-guide.md
+  - 'FDCS User & Programmers Manual': ./userguide/user-guide.md
 
