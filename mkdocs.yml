@@ -10,6 +10,6 @@ theme: readthedocs
 extra_css: ["https://fiware.org/style/fiware_readthedocs.css"]
 pages:
 #  - Home: README.md
-  - 'FDCS Installation & Administration Manual': docs/adminguide/admin-guide.md
-  - 'FDCS User & Programmers Manual': docs/userguide/user-guide.md
+  - 'FDCS Installation & Administration Manual': ./docs/adminguide/admin-guide.md
+  - 'FDCS User & Programmers Manual': ./docs/userguide/user-guide.md
 
