@@ -1,6 +1,5 @@
 # FIWARE Docker Container Service (FDCS)
 
-
 ## Goal
 The FIWARE Docker Container Service (FDCS) exposes the docker API so that FIWARE tenants can use their locally docker client to remotely manage their docker resources, i.e. containers, volumes, networks, etc.  However tenants are insulated from each other so they can only manage docker resources, that they have created. In addition to exposing the regular Docker capabilities FDCS provides authorization and authentication capabilities which allows it to support tenant isolation between different FIWARE accounts. The multi-tenant Docker support is integrated with FIWARE Keystone service and its existing accounts definitions. The service also provides support for name scoping between tenants such that tenants can use the same docker resource names without interfering with each other. 
 
@@ -52,7 +51,7 @@ In step 6 the Service's multi-tenant swarm sends a ''Keystone list tenants'' req
 
 In step 8 the Service's multi-tenant swarm checks whether the user's tenant id is in tenant list.  Once the the tenant has been authorized swarm ensures that the tenants are isolated from each other by ensuring that each tenant can only manage and link to their own containers, volumes, and networks.
 
-![](figs/multi-tenant_Swarm_with_Keystone_Authentication.png?raw=true)
+![](docs/figs/multi-tenant_Swarm_with_Keystone_Authentication.png?raw=true)
 
 [FDCS User Guide](https://github.com/fiware-docker/docker-container-service/blob/master/docs/userguide/user-guide.md)  describes in more detail how the docker client may interact with the service.
 
@@ -65,12 +64,12 @@ Docker implements a high-level API to provide lightweight containers that run pr
 In the illustration below we show a local Docker client remotely managing its Docker containers from a work station using the service. Most of the communication between the client and the service is through the Docker REST API. But the client must communicate with FIWARE’s Openstack Keystone Identity Management to get a valid token to interact with the service.
 Once a valid token is obtained the client can use the docker cli or docker compose to create and deploy complex Docker services.
 
-![](figs/FDCS_Overview.png?raw=true)
+![](docs/figs/FDCS_Overview.png?raw=true)
 
 
 In the illustration below we show a FIWARE Docker Container Service's cluster of docker hosts. Three FIWARE tenants are sharing the cluster's resources, but the service ensures that tenants are isolated from each other.
 
-![](figs/FDCS_Tenant_Isolation.png?raw=true)
+![](docs/figs/FDCS_Tenant_Isolation.png?raw=true)
 
 
 For details about how to use FDCS see the [FDCS User Guide](docs/userguide/user-guide.md).

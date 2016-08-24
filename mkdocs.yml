@@ -10,7 +10,6 @@ theme: readthedocs
 extra_css: ["https://fiware.org/style/fiware_readthedocs.css"]
 pages:
   - 'Home': 'index.md'
-  - 'FDCS Introduction': '../README.md' 
   - 'FDCS User & Programmers Manual': 'userguide/user-guide.md'
   - 'FDCS set-docker-config': 'userguide/set-docker-config.md'
   - 'FDCS docker-cli': 'userguide/docker-cli.md'
