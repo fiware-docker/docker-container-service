@@ -13,7 +13,7 @@ pages:
   - 'FDCS User & Programmers Manual': 'userguide/user-guide.md'
   - 'FDCS set-docker-config': 'userguide/set-docker-config.md'
   - 'FDCS docker-cli': 'userguide/docker-cli.md'
-  - 'FDCS docker-compose': 'userguide/docker-composer.md'
+  - 'FDCS docker-compose': 'userguide/docker-compose.md'
   - 'FDCS Installation & Administration Manual': 'adminguide/admin-guide.md'
 
 
