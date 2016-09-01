@@ -81,7 +81,7 @@ We show that DB is intitially empty.
 /orion$ curl $port/v2/entities
 []
 ```
-We add to the DB enitity Room2 with attributes temperature and pressure and validates that the entity is indeed added to the DB. 
+We add to the DB entity Room2 with attributes temperature and pressure and validates that the entity is indeed added to the DB. 
 ```
 /orion$ curl ${port}/v2/entities -s -S --header 'Content-Type: application/json' -X POST -d @- <<EOF
 {
