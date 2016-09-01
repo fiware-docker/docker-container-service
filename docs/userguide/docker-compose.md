@@ -76,7 +76,7 @@ We fetch orion's host port mapped URL with the docker-compose port command so th
 ```
 /orion$ port=$(docker-compose port orion 1026)
 ```
-We show that DB is intitially empty. 
+We show that DB is initially empty. 
 ```
 /orion$ curl $port/v2/entities
 []
