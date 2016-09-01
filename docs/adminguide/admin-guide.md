@@ -169,7 +169,7 @@ Enable swap cgroup memory limit following those steps from [docker documentation
      
 
 <li> The engine daemon will be running as a service on each node
-Configure the engine to listen on the port that was specified when you created the Docker Nodes security group above.  You should also allow it to listen on a linux file socket to simplify debug.  
+Configure the engine to listen on the port that was specified when you created the Docker Nodes security group above.  You should also allow it to listen on a Linux file socket to simplify debug.  
 
      Update <b>/etc/default/docker</b> with 
      <p>
