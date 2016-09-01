@@ -100,13 +100,13 @@ FDCS supports mulit-tenant isolation. FDCS allows many authorized FIWARE tenants
 
 ## Multi-Tenant Name Scoping
 
-FDCS supports mulit-tenant name scoping.  This means tenants can assign the same name to their docker resources without interfering with each other.  For instants two tenants could create a container with the same name. They can also reference their resources by name and FDCS will ensure that the reference is to the resource owned by the tenant.
+FDCS supports multi-tenant name scoping.  This means tenants can assign the same name to their docker resources without interfering with each other.  For instants two tenants could create a container with the same name. They can also reference their resources by name and FDCS will ensure that the reference is to the resource owned by the tenant.
 
 ## Managing containers
 
 All docker requests to manage containers are supported, but they are limited to containers that belong to the specified tenant.  For instance ps will only list containers created by the specified tenant.
 
-There are some restictions on docker requests to run and create containers. In brief the restrictions are related to the service isolating tenants from each other and from the docker host.  Thus in addition to limiting a tenant to only managing their own containers, tenants are prevented from disproportionately over utilizing resources. 
+There are some restrictions on docker requests to run and create containers. In brief the restrictions are related to the service isolating tenants from each other and from the docker host.  Thus in addition to limiting a tenant to only managing their own containers, tenants are prevented from disproportionately over utilizing resources. 
 
 ## Networking containers
 ### User Defined Networks
