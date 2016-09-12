@@ -1,4 +1,9 @@
-# FIWARE Docker Container Service (FDCS)
+#<a name="top"></a> FIWARE Docker Container Service (FDCS)
+[![License badge](https://img.shields.io/badge/license-APACHE_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Documentation badge](https://img.shields.io/badge/docs-latest-brightgreen.svg)](http://simple-docker-hosting-on-fiware-cloud.readthedocs.org/en/latest/)
+[![Support badge]( https://img.shields.io/badge/support-sof-yellowgreen.svg)](http://stackoverflow.com/questions/tagged/fiware-docker)
+
+
 
 ## Goal
 The FIWARE Docker Container Service (FDCS) exposes the docker API so that FIWARE tenants can use their locally docker client to remotely manage their docker resources, i.e. containers, volumes, networks, etc.  However tenants are insulated from each other so they can only manage docker resources, that they have created. In addition to exposing the regular Docker capabilities FDCS provides authorization and authentication capabilities which allows it to support tenant isolation between different FIWARE accounts. The multi-tenant Docker support is integrated with FIWARE Keystone service and its existing accounts definitions. The service also provides support for name scoping between tenants such that tenants can use the same docker resource names without interfering with each other. 

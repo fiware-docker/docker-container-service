@@ -50,7 +50,7 @@ The *config.json* takes the following form:
 
 The default location of the configuration file is *$HOME/.docker*.  But you can use the docker --config flag to indicate another directory. 
 
-There are many ways to get your keystone token id and tenant id.  For instance you could use curl.  But we have provided and a script called [set-docker-config.bash](./set-docker-config.md) that makes creating your config.json file easy.
+There are many ways to get your keystone token id and tenant id.  For instance you could use curl.  But we have provided and a script called [set-docker-config.bash](https://github.com/fiware-docker/docker-container-service/tree/master/docs/userguide/set-docker-config.md) that makes creating your config.json file easy.
   
 This is an example of using the script to create a docker configuration file at .docker/config.json: 
 
@@ -58,7 +58,7 @@ This is an example of using the script to create a docker configuration file at 
 
 Keystone tokens expire after appproximately one day so you will need to update the configuration file daily.
 
-For more information about the script see the [set_docker_config readme](./set-docker-config.md).
+For more information about the script see the [set_docker_config readme](https://github.com/fiware-docker/docker-container-service/tree/master/docs/userguide/set-docker-config.md).
 
 
 4) *Run docker commands:*
@@ -140,14 +140,14 @@ Note: we do plan to support managing images in private repositories in the futur
 ##Docker CLI
 Once you prepare your docker client as described in [Quick Start](./user-guide.md##Quick Start) you can use the [Docker CLI](https://docs.docker.com/engine/reference/commandline/cli/). All the commands to manage your containers are supported. But they are limited to containers that belonging to the tenant specified in your config.json file.  So ps will only list containers belonging to the specified tenant. Likewise, there are some restictions on docker run and create.
 
-See [Docker CLI Support](./docker-cli.md).
+See [Docker CLI Support](https://github.com/fiware-docker/docker-container-service/tree/master/docs/userguide/docker-cli.md).
 
 ##docker-compose
 Once you prepare your docker client as described in the user guide's [Quick Start](./user-guide.md##Quick Start) you can use [Docker Compose](https://docs.docker.com/compose/). We support Docker-Compose 1.6.2 and above.
 
 Note: docker-compose does not support the docker cli --config flag, so the ~/.docker/config.json must contain headers X-Auth-Token and X-Auth-TenantId. Likewise, docker-compose does not support the docker cli -H flag so the environment variable must be set to tcp://docker.lab.fiware.org:2376.
 
-See [docker-compose Support](./docker-compose.md).
+See [docker-compose Support](https://github.com/fiware-docker/docker-container-service/tree/master/docs/userguide/docker-compose.md).
 
 
 ## Getting Docker help
