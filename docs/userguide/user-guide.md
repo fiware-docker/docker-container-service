@@ -138,12 +138,12 @@ Note: we do plan to support managing images in private repositories in the futur
 
 
 ##Docker CLI
-Once you prepare your docker client as described in [Quick Start](./user-guide.md##Quick Start) you can use the [Docker CLI](https://docs.docker.com/engine/reference/commandline/cli/). All the commands to manage your containers are supported. But they are limited to containers that belonging to the tenant specified in your config.json file.  So ps will only list containers belonging to the specified tenant. Likewise, there are some restictions on docker run and create.
+Once you prepare your docker client as described in the user guide's Quick Start you can use the [Docker CLI](https://docs.docker.com/engine/reference/commandline/cli/). All the commands to manage your containers are supported. But they are limited to containers that belonging to the tenant specified in your config.json file.  So ps will only list containers belonging to the specified tenant. Likewise, there are some restictions on docker run and create.
 
 See [Docker CLI Support](https://github.com/fiware-docker/docker-container-service/tree/master/docs/userguide/docker-cli.md).
 
 ##docker-compose
-Once you prepare your docker client as described in the user guide's [Quick Start](./user-guide.md##Quick Start) you can use [Docker Compose](https://docs.docker.com/compose/). We support Docker-Compose 1.6.2 and above.
+Once you prepare your docker client as described in the user guide's Quick Start you can use [Docker Compose](https://docs.docker.com/compose/). We support Docker-Compose 1.6.2 and above.
 
 Note: docker-compose does not support the docker cli --config flag, so the ~/.docker/config.json must contain headers X-Auth-Token and X-Auth-TenantId. Likewise, docker-compose does not support the docker cli -H flag so the environment variable must be set to tcp://docker.lab.fiware.org:2376.
 

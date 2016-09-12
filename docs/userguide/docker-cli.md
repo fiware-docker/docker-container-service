@@ -1,5 +1,5 @@
 #Docker CLI
-Once you prepare your docker client as described in the user guide's [Quick Start](./user-guide.md##Quick Start) you can use the [Docker CLI](https://docs.docker.com/engine/reference/commandline/cli/). We support docker 1.10.3 and above. 
+Once you prepare your docker client as described in the user guide's [Quick Start](https://github.com/fiware-docker/docker-container-service/blob/master/docs/userguide/user-guide.md/user-guide.md##Quick Start) you can use the [Docker CLI](https://docs.docker.com/engine/reference/commandline/cli/). We support docker 1.10.3 and above. 
 
 
 Most of the commands to manage your containers are supported. But they are limited to containers that belonging to the tenant specified in your config.json file.  For instance, ps will only list containers belonging to the specified tenant.
