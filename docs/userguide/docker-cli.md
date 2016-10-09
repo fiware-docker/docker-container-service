@@ -14,12 +14,12 @@ These docker cli commands are supported:
 - inspect
 - kill
 - logs
-- network connect (currently not supported but we are working on it)
-- network create (currently not supported but we are working on it)
-- network disconnect(currently not supported but we are working on it)
-- network inspect (currently not supported but we are working on it)
-- network ls (currently not supported but we are working on it)
-- network rm (currently not supported but we are working on it)
+- network connect
+- network create
+- network disconnect
+- network inspect
+- network ls
+- network rm
 - pause
 - port
 - ps
@@ -58,7 +58,7 @@ These docker run flags are supported, but there may be some restrictions:
 - memory-swap (must be less than or equal to the default tenant quota)
 - memory-swappiness ?
 - name
-- net  ?
+- net  
 - oom-kill-disable ?
 - P, publish-all
 - p, --publish (external host port not allowed)
@@ -152,30 +152,35 @@ $ cat ~/docker-user-2/config.json
 The examples show the two users leveraging docker to manage their docker resources on the FDCS cluster, while FDCS supports multi-tenant isolation and multi-tenant name scoping so that the two users do not interfer with each other.
 ```
 ###User defined networks
-FDCS supports user defined networks and their management.  Currently it only supports bridge type networks.  In the future it will support overlay networks. Containers on the same network can securely communicate with each other, but those on different networks are isolated from each.  Each network has its own DNS which allows communication between containers on the same network using container names.
+FDCS supports user defined overlay networks and their management. Containers on the same overlay network can securely communicate with each other, but those on different networks are isolated from each.  Each network has its own DNS which allows communication between containers on the same network using container names.  The containers may be running on different docker hosts in the FDCS cluster.
 
 ####User defined network - ping
-In this example we demonstrate FDCS support of user defined bridge networks. It shows  containers on the same network can ping each other using their container name, but those on different networks are isolated from each. It also demonstrates how different tenants are isolated from each other but still can use the same names for their network and containers.  Further we show host port mapping allowing public access to containers residing on user defined network.
+In this example we demonstrate FDCS support of user defined overlay networks. It shows  containers on the same network can ping each other using their container name, but those on different networks are isolated from each. It also demonstrates how different tenants are isolated from each other but still can use the same names for their networks and containers.  Further we show host port mapping allowing public access to containers residing on user defined network.
 
 
 docker-user-1 creates and inspects a bridge network called isolated_nw.
 ```
-$ docker --config ~/docker-user-1 network create --driver bridge isolated_nw 
-b7b259090b4dd7a7f01426c28ebef51ab07ff87c71433dae4d65b74881e38bb3
-$ docker --config ~/docker-user-1 network inspect isolated_nw 
+$ docker --config ~/docker-user-1 network ls
+NETWORK ID          NAME                DRIVER
+$ docker --config ~/docker-user-1 network create --driver overlay isolated_nw
+38b3928cea20e80e1309d240c2ff7185fdb4ae39962cb235d642ccaf01d9b420
+$ docker --config ~/docker-user-1 network ls
+NETWORK ID          NAME                DRIVER
+38b3928cea20        isolated_nw         overlay             
+$ docker --config ~/docker-user-1 network inspect isolated_nw
 [
     {
         "Name": "isolated_nw",
-        "Id": "b7b259090b4dd7a7f01426c28ebef51ab07ff87c71433dae4d65b74881e38bb3",
-        "Scope": "local",
-        "Driver": "bridge",
+        "Id": "38b3928cea20e80e1309d240c2ff7185fdb4ae39962cb235d642ccaf01d9b420",
+        "Scope": "global",
+        "Driver": "overlay",
         "IPAM": {
             "Driver": "default",
             "Options": {},
             "Config": [
                 {
-                    "Subnet": "172.19.0.0/16",
-                    "Gateway": "172.19.0.1/16"
+                    "Subnet": "10.0.0.0/24",
+                    "Gateway": "10.0.0.1/24"
                 }
             ]
         },
@@ -183,68 +188,121 @@ $ docker --config ~/docker-user-1 network inspect isolated_nw
         "Options": {}
     }
 ]
+
 ```
-docker-user-1 runs two containers, container1 and container2, and attaches them to network isolated_nw.  He then inspects network to see that the containers are indeed attached. 
+docker-user-1 runs two containers, container1 and container2, and attaches them to network isolated_nw.  He then inspects the network to see that the containers are indeed attached.  
 ```
-$ docker --config ~/docker-user-1 run --net=isolated_nw -itd -p 80 --name=container1 busybox sh -c "httpd;sh"
-44bc42c6d2114852617deaf2fa6f1e37717d173b5a6f683b5b256cac0c75b126
-$ docker --config ~/docker-user-1 run --net=isolated_nw -itd -p 80 --name=container2 busybox sh -c "httpd;sh"
-f7939fb2a7812b56c533733995893b45c9caa794a8d0a90ce045f8baa0faf013
-$ docker --config ~/docker-user-1 network inspect isolated_nw 
+$ docker --config ~/docker-user-1 run --net=isolated_nw -itd -p 80 --name=container1 busybox httpd -f -p 80
+722ea834daf52c641f1606ad594dce5def56815c421c367fe28d5d3eb33aec2d
+docker-user-1@rcc-hrl-kvg-558:~$ docker --config ~/docker-user-1 run --net=isolated_nw -itd -p 80 --name=container2 busybox httpd -f -p 80
+7b17c249ac4bbc1211c9a048e0775b18cba5435858b3773086972806cf25cc36
+docker-user-1@rcc-hrl-kvg-558:~$ docker --config ~/docker-user-1 ps
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS                          NAMES
+7b17c249ac4b        busybox             "httpd -f -p 80"    14 seconds ago      Up 11 seconds       130.206.119.32:32770->80/tcp   docker-host-3/container2
+722ea834daf5        busybox             "httpd -f -p 80"    43 seconds ago      Up 40 seconds       130.206.119.28:32771->80/tcp   docker-host-2/container1
+
+$ docker --config ~/docker-user-1 network inspect isolated_nw
 [
     {
         "Name": "isolated_nw",
-        "Id": "b7b259090b4dd7a7f01426c28ebef51ab07ff87c71433dae4d65b74881e38bb3",
-        "Scope": "local",
-        "Driver": "bridge",
+        "Id": "38b3928cea20e80e1309d240c2ff7185fdb4ae39962cb235d642ccaf01d9b420",
+        "Scope": "global",
+        "Driver": "overlay",
         "IPAM": {
             "Driver": "default",
             "Options": {},
             "Config": [
                 {
-                    "Subnet": "172.19.0.0/16",
-                    "Gateway": "172.19.0.1/16"
+                    "Subnet": "10.0.0.0/24",
+                    "Gateway": "10.0.0.1/24"
                 }
             ]
         },
         "Containers": {
-            "44bc42c6d2114852617deaf2fa6f1e37717d173b5a6f683b5b256cac0c75b126": {
+            "722ea834daf52c641f1606ad594dce5def56815c421c367fe28d5d3eb33aec2d": {
                 "Name": "container1",
-                "EndpointID": "6b85818b1b2d31686829a688a7ff6c0fbde3177395da49933dcdc8dd39de7bc2",
-                "MacAddress": "02:42:ac:13:00:02",
-                "IPv4Address": "172.19.0.2/16",
+                "EndpointID": "2b98b5212f15c39a370a4895956ca3c7d35e8223f241ce5b151cd04a9f428572",
+                "MacAddress": "02:42:0a:00:00:02",
+                "IPv4Address": "10.0.0.2/24",
                 "IPv6Address": ""
             },
-            "f7939fb2a7812b56c533733995893b45c9caa794a8d0a90ce045f8baa0faf013": {
+            "7b17c249ac4bbc1211c9a048e0775b18cba5435858b3773086972806cf25cc36": {
                 "Name": "container2",
-                "EndpointID": "e1ed906b079283579d80a235506199aeeb07f1b40a2358c97683cead6bc0c628",
-                "MacAddress": "02:42:ac:13:00:03",
-                "IPv4Address": "172.19.0.3/16",
+                "EndpointID": "1e9bcc0c6261509a6a644cdc6df0e8b01adafbaac9d338ec6164137a590f8b77",
+                "MacAddress": "02:42:0a:00:00:03",
+                "IPv4Address": "10.0.0.3/24",
                 "IPv6Address": ""
             }
         },
         "Options": {}
     }
 ]
+
+```
+docker-user-1 shows that two containers can ping each other using their container names or their ip address as shown in the network inspect.   
+```
+
+$ docker --config ~/docker-user-1 exec container1 ping -c 2 container2
+PING container2 (10.0.0.3): 56 data bytes
+64 bytes from 10.0.0.3: seq=0 ttl=64 time=24.344 ms
+64 bytes from 10.0.0.3: seq=1 ttl=64 time=24.144 ms
+
+--- container2 ping statistics ---
+2 packets transmitted, 2 packets received, 0% packet loss
+round-trip min/avg/max = 24.144/24.244/24.344 ms
+docker-user-1@rcc-hrl-kvg-558:~$ docker exec container2 ping -c 2 container1
+PING container1 (10.0.0.2): 56 data bytes
+64 bytes from 10.0.0.2: seq=0 ttl=64 time=24.267 ms
+64 bytes from 10.0.0.2: seq=1 ttl=64 time=24.412 ms
+
+--- container1 ping statistics ---
+2 packets transmitted, 2 packets received, 0% packet loss
+round-trip min/avg/max = 24.267/24.339/24.412 ms
+
+
+docker-user-1@rcc-hrl-kvg-558:~$ docker exec container1 ping -c 2 10.0.0.3
+PING 10.0.0.3 (10.0.0.3): 56 data bytes
+64 bytes from 10.0.0.3: seq=0 ttl=64 time=24.166 ms
+64 bytes from 10.0.0.3: seq=1 ttl=64 time=24.328 ms
+
+--- 10.0.0.3 ping statistics ---
+2 packets transmitted, 2 packets received, 0% packet loss
+round-trip min/avg/max = 24.166/24.247/24.328 ms
+
+
+docker-user-1@rcc-hrl-kvg-558:~$ docker exec container2 ping -c 2 10.0.0.2
+PING 10.0.0.2 (10.0.0.2): 56 data bytes
+64 bytes from 10.0.0.2: seq=0 ttl=64 time=24.409 ms
+64 bytes from 10.0.0.2: seq=1 ttl=64 time=24.280 ms
+
+--- 10.0.0.2 ping statistics ---
+2 packets transmitted, 2 packets received, 0% packet loss
+round-trip min/avg/max = 24.280/24.344/24.409 ms
+
+
 ```
 docker-user-1 creates and inspects another bridge network called isolated_nw2.
 ```
-$ docker --config ~/docker-user-1 network create --driver bridge isolated_nw2
-ba3df08fd1be678f352d632883bb653ef5459ba72f236ad27e8a80db1a6dfa78
-$ docker --config ~/docker-user-1 network inspect isolated_nw2
+$ docker --config ~/docker-user-1 network create --driver overlay isolated_nw2
+ee829ebc5f528b0c4e726f27f6c77f24da165ec764bc5b5d42a1d561b6ca5a03
+docker-user-1@rcc-hrl-kvg-558:~$ docker network ls
+NETWORK ID          NAME                DRIVER
+38b3928cea20        isolated_nw         overlay             
+ee829ebc5f52        isolated_nw2        overlay             
+docker-user-1@rcc-hrl-kvg-558:~$ docker network inspect isolated_nw2
 [
     {
         "Name": "isolated_nw2",
-        "Id": "ba3df08fd1be678f352d632883bb653ef5459ba72f236ad27e8a80db1a6dfa78",
-        "Scope": "local",
-        "Driver": "bridge",
+        "Id": "ee829ebc5f528b0c4e726f27f6c77f24da165ec764bc5b5d42a1d561b6ca5a03",
+        "Scope": "global",
+        "Driver": "overlay",
         "IPAM": {
             "Driver": "default",
             "Options": {},
             "Config": [
                 {
-                    "Subnet": "172.19.0.0/16",
-                    "Gateway": "172.19.0.1/16"
+                    "Subnet": "10.0.1.0/24",
+                    "Gateway": "10.0.1.1/24"
                 }
             ]
         },
@@ -252,34 +310,35 @@ $ docker --config ~/docker-user-1 network inspect isolated_nw2
         "Options": {}
     }
 ]
+
 ```
 docker-user-1 creates another container, container3, and attaches it to network isolated_nw2.
 ```
-$ docker --config ~/docker-user-1 run --net=isolated_nw2 -itd -p 80 --name=container3 busybox sh -c "httpd;sh"
-aa11f9313398a1536f2d34b061210653fc84f26c75264a240cbc7962afd4a558
-$ docker --config ~/docker-user-1 network inspect isolated_nw2
+$ docker --config ~/docker-user-1 run --net=isolated_nw2 -itd -p 80 --name=container3 busybox httpd -f -p 80
+3ff7da20a937272129b0a7159bcbf7092536d38866b39f4ea047878bcfba171b
+docker-user-1@rcc-hrl-kvg-558:~$ docker network inspect isolated_nw2
 [
     {
         "Name": "isolated_nw2",
-        "Id": "ba3df08fd1be678f352d632883bb653ef5459ba72f236ad27e8a80db1a6dfa78",
-        "Scope": "local",
-        "Driver": "bridge",
+        "Id": "ee829ebc5f528b0c4e726f27f6c77f24da165ec764bc5b5d42a1d561b6ca5a03",
+        "Scope": "global",
+        "Driver": "overlay",
         "IPAM": {
             "Driver": "default",
             "Options": {},
             "Config": [
                 {
-                    "Subnet": "172.19.0.0/16",
-                    "Gateway": "172.19.0.1/16"
+                    "Subnet": "10.0.1.0/24",
+                    "Gateway": "10.0.1.1/24"
                 }
             ]
         },
         "Containers": {
-            "aa11f9313398a1536f2d34b061210653fc84f26c75264a240cbc7962afd4a558": {
+            "3ff7da20a937272129b0a7159bcbf7092536d38866b39f4ea047878bcfba171b": {
                 "Name": "container3",
-                "EndpointID": "8b67dffffaf0e82f3fb24e59f5c303dc5cffc08e4f4519fcfcb499ab5fc94165",
-                "MacAddress": "02:42:ac:13:00:02",
-                "IPv4Address": "172.19.0.2/16",
+                "EndpointID": "efee5206d8b50ba7421873bea9fabfb470a2a2bf115ba869e6feb5c838349a6a",
+                "MacAddress": "02:42:0a:00:01:02",
+                "IPv4Address": "10.0.1.2/24",
                 "IPv6Address": ""
             }
         },
@@ -292,51 +351,55 @@ docker-user-1 shows its running containers, container1, container2, and containe
 ```
 
 $ docker --config ~/docker-user-1  ps
-CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS                        NAMES
-aa11f9313398        busybox             "sh -c httpd;sh"    2 minutes ago       Up 2 minutes        9.148.24.230:32781->80/tcp   rcc-hrl-kvg-588/container3
-f7939fb2a781        busybox             "sh -c httpd;sh"    16 minutes ago      Up 16 minutes       9.148.24.231:32780->80/tcp   rcc-hrl-kvg-589/container2
-44bc42c6d211        busybox             "sh -c httpd;sh"    16 minutes ago      Up 16 minutes       9.148.24.231:32779->80/tcp   rcc-hrl-kvg-589/container1
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS                          NAMES
+3ff7da20a937        busybox             "httpd -f -p 80"    3 minutes ago       Up 3 minutes        130.206.119.28:32772->80/tcp   docker-host-2/container3
+7b17c249ac4b        busybox             "httpd -f -p 80"    16 minutes ago      Up 16 minutes       130.206.119.32:32770->80/tcp   docker-host-3/container2
+722ea834daf5        busybox             "httpd -f -p 80"    17 minutes ago      Up 16 minutes       130.206.119.28:32771->80/tcp   docker-host-2/container1
+
 ```
-docker-user-1 demonstates that containers on the same network can communicate with each other over their shared private network, but containers on different networks are isolated from each other.  Notice that container1 can ping container2 since they both reside on the isolated_nw, while container1 can not ping container3 since it does not reside on isolated_nw. We also see that the container name may be used as its DNS name.
+docker-user-1 demonstates that containers on the same network can communicate with each other over their shared private network, but containers on different networks are isolated from each other.  Notice that container1 can ping container2 since they both reside on the isolated_nw, while container1 can not ping container3 since it does not reside on isolated_nw. 
 ```
-$ docker --config ~/docker-user-1  exec container1 ping -W 1 -c 3 container2
-PING container2 (172.19.0.3): 56 data bytes
-64 bytes from 172.19.0.3: seq=0 ttl=64 time=0.124 ms
-64 bytes from 172.19.0.3: seq=1 ttl=64 time=0.039 ms
-64 bytes from 172.19.0.3: seq=2 ttl=64 time=0.107 ms
+$ docker --config ~/docker-user-1 exec container1 ping -c 2 container2
+PING container2 (10.0.0.3): 56 data bytes
+64 bytes from 10.0.0.3: seq=0 ttl=64 time=24.685 ms
+64 bytes from 10.0.0.3: seq=1 ttl=64 time=24.176 ms
 
 --- container2 ping statistics ---
-3 packets transmitted, 3 packets received, 0% packet loss
-round-trip min/avg/max = 0.039/0.090/0.124 ms
+2 packets transmitted, 2 packets received, 0% packet loss
+round-trip min/avg/max = 24.176/24.430/24.685 ms
 
-$ docker --config ~/docker-user-1  exec container1 ping -W 1 -c 3 container3
-PING container3 (9.148.41.7): 56 data bytes
+$ docker --config ~/docker-user-1 --config ~/docker-user-1 exec container1 ping -c 2 container3
+ping: bad address 'container3'
 
---- container3 ping statistics ---
-3 packets transmitted, 0 packets received, 100% packet loss
+$ docker exec container1 --config ~/docker-user-1 ping -c 2 10.0.1.2
+PING 10.0.1.2 (10.0.1.2): 56 data bytes
+
+--- 10.0.1.2 ping statistics ---
+2 packets transmitted, 0 packets received, 100% packet loss
 
 ```
 We now demonstate that FDCS supports network tenant isolation and name scoping by introducing a network that is created by another tenant.
 
 docker-user-2 creates a network assigning it the same name already used by docker-user-1, i.e. isolated_nw.  However, FDCS ensures that the two networks are isolated from each other.
 ```
-
-$ docker --config ~/docker-user-2 network create --driver bridge isolated_nw
-57b32fb6742c48f628d66d60acc38dd110c68f6c2a82643d52061c3a2b926364
+$ docker --config ~/docker-user-2 network ls
+NETWORK ID          NAME                DRIVER
+$ docker --config ~/docker-user-2 network create --driver overlay isolated_nw
+9e2c8cb747622eb6993b8a2b6aa914074df7c64c7d24cb95681a8a3f2e3925eb
 $ docker --config ~/docker-user-2 network inspect isolated_nw
 [
     {
         "Name": "isolated_nw",
-        "Id": "57b32fb6742c48f628d66d60acc38dd110c68f6c2a82643d52061c3a2b926364",
-        "Scope": "local",
-        "Driver": "bridge",
+        "Id": "9e2c8cb747622eb6993b8a2b6aa914074df7c64c7d24cb95681a8a3f2e3925eb",
+        "Scope": "global",
+        "Driver": "overlay",
         "IPAM": {
             "Driver": "default",
             "Options": {},
             "Config": [
                 {
-                    "Subnet": "172.20.0.0/16",
-                    "Gateway": "172.20.0.1/16"
+                    "Subnet": "10.0.2.0/24",
+                    "Gateway": "10.0.2.1/24"
                 }
             ]
         },
@@ -344,13 +407,16 @@ $ docker --config ~/docker-user-2 network inspect isolated_nw
         "Options": {}
     }
 ]
+
+
 ```
 docker-user-2 creates and runs two containers assigning the same names used by docker-user-1, i.e. container1 and container3, and attaches it to its isolated_nw.
 ```
-$ docker --config ~/docker-user-2 run --net=isolated_nw -itd -p 80 --name=container1 busybox sh -c "httpd;sh"
-70c3164b24de2d412e7f5a4911e43f23550133e81b1470799fc34f59ad014b01
-$ docker --config ~/docker-user-2 run --net=isolated_nw -itd -p 80 --name=container3 busybox sh -c "httpd;sh"
-385ff253ee27993ed38f2d9f2aceb21f3d01e5c03f96cb3b09a131981b78713d
+$ docker --config ~/docker-user-2 run --net=isolated_nw -itd -p 80 --name=container1 busybox httpd -f -p 80
+67a15cd9f94d8b39c9f8c0f255356657443dbed13c9177308bbdeec490fb6805
+$ docker --config ~/docker-user-2 run --net=isolated_nw -itd -p 80 --name=container3 busybox httpd -f -p 80
+55761092f6f9e93ea42e3fafc481772658d239ad6b23e73379f754d49ddab337
+
 ```
 docker-user-2 and docker-user-1 inspect their private isolated_nw networks. docker-user-2's inspect shows container1 and container3 attached to its isolated_nw network. docker-user-1's inspect shows container1 and container2 attached to its isolated_nw network. 
 ```
@@ -358,68 +424,69 @@ $ docker --config ~/docker-user-2 network inspect isolated_nw
 [
     {
         "Name": "isolated_nw",
-        "Id": "57b32fb6742c48f628d66d60acc38dd110c68f6c2a82643d52061c3a2b926364",
-        "Scope": "local",
-        "Driver": "bridge",
+        "Id": "9e2c8cb747622eb6993b8a2b6aa914074df7c64c7d24cb95681a8a3f2e3925eb",
+        "Scope": "global",
+        "Driver": "overlay",
         "IPAM": {
             "Driver": "default",
             "Options": {},
             "Config": [
                 {
-                    "Subnet": "172.20.0.0/16",
-                    "Gateway": "172.20.0.1/16"
+                    "Subnet": "10.0.2.0/24",
+                    "Gateway": "10.0.2.1/24"
                 }
             ]
         },
         "Containers": {
-            "385ff253ee27993ed38f2d9f2aceb21f3d01e5c03f96cb3b09a131981b78713d": {
-                "Name": "container3",
-                "EndpointID": "e57d9bec27ab269a339bb430babd4b8391f34d228bce636c7ec76920fbac46ca",
-                "MacAddress": "02:42:ac:14:00:03",
-                "IPv4Address": "172.20.0.3/16",
+            "67a15cd9f94d8b39c9f8c0f255356657443dbed13c9177308bbdeec490fb6805": {
+                "Name": "container1",
+                "EndpointID": "8fd66d66668290f0459a6870b7bdab3ee39b6a3a02da2895c4a30f90416d9a5b",
+                "MacAddress": "02:42:0a:00:02:02",
+                "IPv4Address": "10.0.2.2/24",
                 "IPv6Address": ""
             },
-            "70c3164b24de2d412e7f5a4911e43f23550133e81b1470799fc34f59ad014b01": {
-                "Name": "container1",
-                "EndpointID": "f3bf41c1b0376dafaa97babffa875bc4621bd5ea95bb0115ae54e4919c371904",
-                "MacAddress": "02:42:ac:14:00:02",
-                "IPv4Address": "172.20.0.2/16",
+            "ep-b80c1415d279e27d646dce898dfe35733448413a33675b9f1cfcb7b72f493f00": {
+                "Name": "container3",
+                "EndpointID": "b80c1415d279e27d646dce898dfe35733448413a33675b9f1cfcb7b72f493f00",
+                "MacAddress": "02:42:0a:00:02:03",
+                "IPv4Address": "10.0.2.3/24",
                 "IPv6Address": ""
             }
         },
         "Options": {}
     }
 ]
+
 $ docker --config ~/docker-user-1 network inspect isolated_nw
 [
     {
         "Name": "isolated_nw",
-        "Id": "b7b259090b4dd7a7f01426c28ebef51ab07ff87c71433dae4d65b74881e38bb3",
-        "Scope": "local",
-        "Driver": "bridge",
+        "Id": "38b3928cea20e80e1309d240c2ff7185fdb4ae39962cb235d642ccaf01d9b420",
+        "Scope": "global",
+        "Driver": "overlay",
         "IPAM": {
             "Driver": "default",
             "Options": {},
             "Config": [
                 {
-                    "Subnet": "172.19.0.0/16",
-                    "Gateway": "172.19.0.1/16"
+                    "Subnet": "10.0.0.0/24",
+                    "Gateway": "10.0.0.1/24"
                 }
             ]
         },
         "Containers": {
-            "44bc42c6d2114852617deaf2fa6f1e37717d173b5a6f683b5b256cac0c75b126": {
+            "722ea834daf52c641f1606ad594dce5def56815c421c367fe28d5d3eb33aec2d": {
                 "Name": "container1",
-                "EndpointID": "6b85818b1b2d31686829a688a7ff6c0fbde3177395da49933dcdc8dd39de7bc2",
-                "MacAddress": "02:42:ac:13:00:02",
-                "IPv4Address": "172.19.0.2/16",
+                "EndpointID": "2b98b5212f15c39a370a4895956ca3c7d35e8223f241ce5b151cd04a9f428572",
+                "MacAddress": "02:42:0a:00:00:02",
+                "IPv4Address": "10.0.0.2/24",
                 "IPv6Address": ""
             },
-            "f7939fb2a7812b56c533733995893b45c9caa794a8d0a90ce045f8baa0faf013": {
+            "7b17c249ac4bbc1211c9a048e0775b18cba5435858b3773086972806cf25cc36": {
                 "Name": "container2",
-                "EndpointID": "e1ed906b079283579d80a235506199aeeb07f1b40a2358c97683cead6bc0c628",
-                "MacAddress": "02:42:ac:13:00:03",
-                "IPv4Address": "172.19.0.3/16",
+                "EndpointID": "1e9bcc0c6261509a6a644cdc6df0e8b01adafbaac9d338ec6164137a590f8b77",
+                "MacAddress": "02:42:0a:00:00:03",
+                "IPv4Address": "10.0.0.3/24",
                 "IPv6Address": ""
             }
         },
@@ -433,57 +500,61 @@ docker-user-2 and docker-user-1 list their networks. docker-user-2 has one netwo
 
 $ docker --config ~/docker-user-2 network ls
 NETWORK ID          NAME                DRIVER
-57b32fb6742c        isolated_nw         bridge              
+9e2c8cb74762        isolated_nw         overlay             
 $ docker --config ~/docker-user-1 network ls
 NETWORK ID          NAME                DRIVER
-b7b259090b4d        isolated_nw         bridge              
-ba3df08fd1be        isolated_nw2        bridge
+b7b259090b4d        isolated_nw         overlay              
+ba3df08fd1be        isolated_nw2        overlay
 
 ```
 We now demonstrate that networks belonging to different networks are isolated from each other. Containers on docker-user-2's isolated_nw can ping each other and docker-user-1's isolated_nw can ping each other. However, containers on docker-user-2's isolated_nw and docker-user-1's isolated_nw can not ping each other.  
 ```
-$ docker --config ~/docker-user-2  exec container1 ping -W 1 -c 3 container3
-PING container3 (172.20.0.3): 56 data bytes
-64 bytes from 172.20.0.3: seq=0 ttl=64 time=0.128 ms
-64 bytes from 172.20.0.3: seq=1 ttl=64 time=0.156 ms
-64 bytes from 172.20.0.3: seq=2 ttl=64 time=0.114 ms
+$ docker --config ~/docker-user-2  exec container1 ping -c 2 container3
+PING container3 (10.0.2.3): 56 data bytes
+64 bytes from 10.0.2.3: seq=0 ttl=64 time=24.824 ms
+64 bytes from 10.0.2.3: seq=1 ttl=64 time=24.195 ms
 
 --- container3 ping statistics ---
-3 packets transmitted, 3 packets received, 0% packet loss
-round-trip min/avg/max = 0.114/0.132/0.156 ms
+2 packets transmitted, 2 packets received, 0% packet loss
+round-trip min/avg/max = 24.195/24.509/24.824 ms
 
-$ docker --config ~/docker-user-1  exec container1 ping -W 1 -c 3 container2
-PING container2 (172.19.0.3): 56 data bytes
-64 bytes from 172.19.0.3: seq=0 ttl=64 time=0.124 ms
-64 bytes from 172.19.0.3: seq=1 ttl=64 time=0.039 ms
-64 bytes from 172.19.0.3: seq=2 ttl=64 time=0.107 ms
+$ docker --config ~/docker-user-2  exec container1 ping -c 2 10.0.2.3
+
+PING 10.0.2.3 (10.0.2.3): 56 data bytes
+64 bytes from 10.0.2.3: seq=0 ttl=64 time=24.571 ms
+64 bytes from 10.0.2.3: seq=1 ttl=64 time=24.148 ms
+
+--- 10.0.2.3 ping statistics ---
+2 packets transmitted, 2 packets received, 0% packet loss
+round-trip min/avg/max = 24.148/24.359/24.571 ms
+
+$ docker --config ~/docker-user-1 exec container1 ping -c 2 container3
+ping: bad address 'container3'
+
+$ docker --config ~/docker-user-1  exec container1 ping -c 2 10.0.2.3
+PING 10.0.2.3 (10.0.2.3): 56 data bytes
+
+--- 10.0.2.3 ping statistics ---
+2 packets transmitted, 0 packets received, 100% packet loss
+
+$ docker --config ~/docker-user-1 exec container1 ping -c 2 10.0.2.3
+PING 10.0.2.3 (10.0.2.3): 56 data bytes
+
+--- 10.0.2.3 ping statistics ---
+2 packets transmitted, 0 packets received, 100% packet loss
+
+$ docker --config ~/docker-user-1 exec container1 ping -c 2 container2
+PING container2 (10.0.0.3): 56 data bytes
+64 bytes from 10.0.0.3: seq=0 ttl=64 time=24.400 ms
+64 bytes from 10.0.0.3: seq=1 ttl=64 time=24.219 ms
 
 --- container2 ping statistics ---
-3 packets transmitted, 3 packets received, 0% packet loss
-round-trip min/avg/max = 0.039/0.090/0.124 ms
-
-$ docker --config ~/docker-user-1  exec container1 ping -W 1 -c 3 container3
-PING container3 (9.148.41.7): 56 data bytes
-
---- container3 ping statistics ---
-3 packets transmitted, 0 packets received, 100% packet loss
+2 packets transmitted, 2 packets received, 0% packet loss
+round-trip min/avg/max = 24.219/24.309/24.400 ms
 
 ```
 We now demonstrate host port mapping to containers on user defined mapping. We show that it allows public access to these containers.
 
-docker-user-2 and docker-user-1 list their containers. docker-user-2 has two containers, container1 and container3. docker-user-1 has three containers, container1, container2, and container3.  Notice that their external URL mapped to port 80 are all different. 
-```
-$ docker --config ~/docker-user-2 ps
-CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS                        NAMES
-385ff253ee27        busybox             "sh -c httpd;sh"    4 minutes ago       Up 4 minutes        9.148.24.230:32785->80/tcp   rcc-hrl-kvg-588/container3
-70c3164b24de        busybox             "sh -c httpd;sh"    4 minutes ago       Up 4 minutes        9.148.24.230:32784->80/tcp   rcc-hrl-kvg-588/container1
-$ docker --config ~/docker-user-1 ps
-CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS                        NAMES
-aa11f9313398        busybox             "sh -c httpd;sh"    37 minutes ago      Up 37 minutes       9.148.24.230:32781->80/tcp   rcc-hrl-kvg-588/container3
-f7939fb2a781        busybox             "sh -c httpd;sh"    52 minutes ago      Up 52 minutes       9.148.24.231:32780->80/tcp   rcc-hrl-kvg-589/container2
-44bc42c6d211        busybox             "sh -c httpd;sh"    52 minutes ago      Up 52 minutes       9.148.24.231:32779->80/tcp   rcc-hrl-kvg-589/container1
-```
-We now show that it is possible to connect to containers with curl used the host port mappings. 
 ```
 $ user1_container1_URL=$(docker --config ~/docker-user-1 port container1 80)
 $ user1_container2_URL=$(docker --config ~/docker-user-1 port container2 80)
@@ -514,34 +585,97 @@ $ curl -s $user2_container1_URL > /dev/null && echo connected || echo Fail
 connected
 $ curl -s $user2_container3_URL > /dev/null && echo connected || echo Fail
 connected
-
-
-
 ```
 
+###User Defined NFS Volumes
+FDCS supports user defined NFS volumes and their management.  Multiple containers can use the same volume in the same time period. This is useful if two containers need access to shared data. For example, if one container writes and the other reads the data. User defined volume data persist even when the containers that reference the volume are removed. Further since FDCS mounts user defined volumes on a NFS mount point the volumes are shared by all the host in the FDCS cluster. Thus, containers on different hosts can easily share data.
 
+In this example we show how two users, docker_user_1 and docker_user_2, leverage user defined volumes to share and persist there data. docker_user_1's volumeA is only accessable to its containers.  docker_user_2's volumeA is only accessable to its containers. 
 
-####User defined network - orion and mongodb
-In this example we demonstrate user defined networks with FIWARE's orion and mongodb.
-
-User creates a use defined bridge network and then run orion and mongodb containers to communicate over the network:
+docker_user-1 creates volumeA. List volume shows the same volume on all hosts in the FDCS cluster. This means no matter where docker_user-1's containers are launched on the FDCS cluster they can access volumeA. 
 ```
-$ network create --driver bridge front
-606734595cce235bd70122db0d22dc02068d9c295b7096b7db60bda1074e0504
-$ docker network inspect front
+$ docker --config ~/docker-user-1 volume create -d nfs --name volumeA
+volumeA 
+$ docker --config ~/docker-user-1 volume ls
+DRIVER              VOLUME NAME
+nfs               docker-host-1/volumeA
+nfs               docker-host-2/volumeA
+```
+docker_user-1 creates two container.  One writes to the volume and the other reads the data that was just written previously to the volume. 
+```
+
+$ docker --config ~/docker-user-1 run --rm -v volumeA:/data busybox sh -c "echo docker_user_1 hello  > /data/file.txt"
+$ docker --config ~/docker-user-1 run --rm -v volumeA:/data busybox sh -c "cat /data/file.txt"
+docker_user_1 hello
+
+```
+docker_user-2 does has no access to the volume created by docker_user-1. 
+```
+
+$ docker --config ~/docker-user-2 volume ls
+DRIVER              VOLUME NAME
+$ docker --config ~/docker-user-2 run --rm -v volumeA:/data  busybox sh -c "cat /data/file.txt"
+cat: can't open '/data/file.txt': No such file or directory
+```
+docker_user-2 creates another volume using the same name used by docker_user-1. 
+```
+$ docker --config ~/docker-user-2 volume create -d nfs --name volumeA
+volumeA
+$ docker --config ~/docker-user-2 volume ls
+DRIVER              VOLUME NAME
+nfs               docker-host-1/volumeA
+nfs               docker-host-2/volumeA
+```
+docker_user-2 creates two container.  One writes to the volume and the other reads the data that was just written previously to the volume. 
+```
+$ docker --config ~/docker-user-2 run --rm -v volumeA:/data busybox sh -c "echo docker_user_2 hello  > /data/file.txt"
+$ docker --config ~/docker-user-2 run --rm -v volumeA:/data busybox sh -c "cat /data/file.txt"
+docker_user_2 hello
+```
+docker_user-1 again reads the data that was previously to this volume. Notice that the data on the two volumes is different.
+```
+$ docker --config ~/docker-user-1 run --rm -v volumeA:/data busybox sh -c "cat /data/file.txt"
+docker_user_1 hello
+
+```
+docker_user-1 an d docker_user-1 remove their volumes.
+```
+
+$ docker --config ~/docker-user-1 volume rm volumeA
+volumeA
+$ docker --config ~/docker-user-2 volume rm volumeA
+volumeA
+$ docker --config ~/docker-user-1 volume ls
+DRIVER              VOLUME NAME
+$ docker --config ~/docker-user-2 volume ls
+DRIVER              VOLUME NAME
+$ 
+
+```
+###orion and mongodb
+The following exampes use a service composed onf FIWARE's orion and mongodb to  demonstrate FDCS's support of user defined overlay networks, user defined NFS volumes, links and volume-from.  
+####orion and mongodb: using user defined overlay network and nfs volume
+The FIWARE orion and mongodb containers are connected over a user defined overlay network. Mongdb's data persists by mounting it to a user defined NFS volume.
+
+
+The is creates a use defined overlay network called front.
+```
+$ docker network create --driver overlay front
+f3cda3053dc649fd056ba9dcfe0b423f8cfd9fb8f2eaecd9ede1ccd6465d5317
+docker-user-1@rcc-hrl-kvg-558:~$ docker network inspect front
 [
     {
         "Name": "front",
-        "Id": "606734595cce235bd70122db0d22dc02068d9c295b7096b7db60bda1074e0504",
-        "Scope": "local",
-        "Driver": "bridge",
+        "Id": "f3cda3053dc649fd056ba9dcfe0b423f8cfd9fb8f2eaecd9ede1ccd6465d5317",
+        "Scope": "global",
+        "Driver": "overlay",
         "IPAM": {
             "Driver": "default",
             "Options": {},
             "Config": [
                 {
-                    "Subnet": "172.19.0.0/16",
-                    "Gateway": "172.19.0.1/16"
+                    "Subnet": "10.0.0.0/24",
+                    "Gateway": "10.0.0.1/24"
                 }
             ]
         },
@@ -549,54 +683,77 @@ $ docker network inspect front
         "Options": {}
     }
 ]
+```
+The user creates a use defined NFS volume.
+```
+$ docker volume create -d nfs --name mongodata
+mongodata
+$ docker volume ls
+DRIVER              VOLUME NAME
+nfs                 mongodata
+nfs                 mongodata
 
-$ docker run -d --net front --name mongo mongo:3.2 --nojournal
-942aaa117c470551afd8df17872b645ef18ca988c91cbd79e1818ccbb3c5bd7e
+```
+The user creates a mongo container, attaches it to the front network and mounts mongodata NFS volume.
+```
+
+$ docker run -d -v mongodata:/data/db --net front --name mongo mongo:3.2 --nojournal
+1c487cd5236eca3a171a508aa232c749422690834fa54163d6443ef633056673
+```
+The user creates a FIWARE orion container and attaches it to the front network.
+```
 $ docker run -d -p 1026 --net front --name orion fiware/orion -dbhost mongo
-cd1b3bda58237364d7ba48d860392801a2c51cc98eceb3189322a0b465202e21
+a5155e4986385606863293f02dcad0432c8b4e3af413c210a4a03c2b16548557
+```
+The user creates inspects the front network. We observe that both containers are attached to the networks.
+```
 $ docker network inspect front
 [
     {
         "Name": "front",
-        "Id": "606734595cce235bd70122db0d22dc02068d9c295b7096b7db60bda1074e0504",
-        "Scope": "local",
-        "Driver": "bridge",
+        "Id": "f3cda3053dc649fd056ba9dcfe0b423f8cfd9fb8f2eaecd9ede1ccd6465d5317",
+        "Scope": "global",
+        "Driver": "overlay",
         "IPAM": {
             "Driver": "default",
             "Options": {},
             "Config": [
                 {
-                    "Subnet": "172.19.0.0/16",
-                    "Gateway": "172.19.0.1/16"
+                    "Subnet": "10.0.0.0/24",
+                    "Gateway": "10.0.0.1/24"
                 }
             ]
         },
         "Containers": {
-            "942aaa117c470551afd8df17872b645ef18ca988c91cbd79e1818ccbb3c5bd7e": {
+            "1c487cd5236eca3a171a508aa232c749422690834fa54163d6443ef633056673": {
                 "Name": "mongo",
-                "EndpointID": "8ed8e6fc6bd8dc31d7194d508b074719d6b5578902d423e613a4ac87b7212511",
-                "MacAddress": "02:42:ac:13:00:02",
-                "IPv4Address": "172.19.0.2/16",
+                "EndpointID": "c114672826177a26486526cc19e4d54dc7e6a326155ce4ed0b3a1ef5ac203c0b",
+                "MacAddress": "02:42:0a:00:00:02",
+                "IPv4Address": "10.0.0.2/24",
                 "IPv6Address": ""
             },
-            "cd1b3bda58237364d7ba48d860392801a2c51cc98eceb3189322a0b465202e21": {
+            "a5155e4986385606863293f02dcad0432c8b4e3af413c210a4a03c2b16548557": {
                 "Name": "orion",
-                "EndpointID": "afff0c6c80c1cc225c299b6456bc149bc238b25477c92700ef13063dab258b79",
-                "MacAddress": "02:42:ac:13:00:03",
-                "IPv4Address": "172.19.0.3/16",
+                "EndpointID": "def63efe47844a630ff2e4c784c6b1462b65b38dcd4d648d7d907c2c9044b9fc",
+                "MacAddress": "02:42:0a:00:00:03",
+                "IPv4Address": "10.0.0.3/24",
                 "IPv6Address": ""
             }
         },
         "Options": {}
     }
 ]
-
-$ docker ps
-CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                          NAMES
-cd1b3bda5823        fiware/orion        "/usr/bin/contextBrok"   9 seconds ago       Up 8 seconds        9.148.24.231:32778->1026/tcp   rcc-hrl-kvg-589/orion
-942aaa117c47        mongo:3.2           "/entrypoint.sh --noj"   51 seconds ago      Up 50 seconds       27017/tcp                      rcc-hrl-kvg-589/mongo
 ```
-User verifies that the network is working as expected:
+The user verifies that the containers are started.
+```
+
+docker-user-1@rcc-hrl-kvg-558:~$ docker ps
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                            NAMES
+a5155e498638        fiware/orion        "/usr/bin/contextBrok"   2 minutes ago       Up 2 minutes        130.206.119.32:32773->1026/tcp   docker-host-3/orion
+1c487cd5236e        mongo:3.2           "/entrypoint.sh --noj"   2 minutes ago       Up 2 minutes        27017/tcp                        docker-host-2/mongo
+
+```
+The user verifies that the service is working as expected:
 ```
 $ port=$(docker port orion 1026)
 $ curl ${port}/version
@@ -610,8 +767,14 @@ $ curl ${port}/version
   "compiled_in" : "838a42ae8431"
 }
 }
+```
+Initially the data base is empty.
+```
 $ curl ${port}/v2/entities
 []
+```
+The user adds and an entry to the database.
+```
 $curl ${port}/v2/entities -s -S --header 'Content-Type: application/json' -X POST -d @- <<EOF
 {
   "id": "Room2",
@@ -630,78 +793,28 @@ $ curl ${port}/v2/entities
 [{"id":"Room2","type":"Room","pressure":{"type":"Number","value":720,"metadata":{}},"temperature":{"type":"Number","value":23,"metadata":{}}}]
 
 ```
-### User Defined Volumes
-FDCS supports user defined volumes and their management.  Multiple containers can use the same volume in the same time period. This is useful if two containers need access to shared data. For example, if one container writes and the other reads the data. User defined volume data persist even when the containers that reference the volume are removed. Further since FDCS mounts user defined volumes on a NFS mount point the volumes are shared by all the host in the FDCS cluster. Thus, containers on different hosts can easily share data.
-
-In this example we show how two users, docker_user_1 and docker_user_2, leverage user defined volumes to share and persist there data. docker_user_1's volumeA is only accessable to its containers.  docker_user_2's volumeA is only accessable to its containers. 
-
-docker_user-1 creates volumeA. List volume shows the same volume on all hosts in the FDCS cluster. This means no matter  
+Now we demonstrate that the data on NFS volume mongodata persists by
+removing orion and mongo and then launching them again.
 ```
-$ docker --config ~/docker-user-1 volume create --name volumeA
-volumeA 
-$ docker --config ~/docker-user-1 volume ls
-DRIVER              VOLUME NAME
-local               docker-host-1/volumeA
-local               docker-host-2/volumeA
-$ docker --config ~/docker-user-1 volume inspect docker-host-1/volumeA
-[
-    {
-        "Name": "volumeA",
-        "Driver": "local",
-        "Mountpoint": "/var/lib/docker/volumes/volumeA/_data"
-    }
-]
-$ docker --config ~/docker-user-1 run -v volumeA:/data --name con1  busybox sh -c "echo docker_user_1 hello  > /data/file.txt"
-$ docker --config ~/docker-user-1 run -v volumeA:/data --name con2  busybox sh -c "cat /data/file.txt"
-docker_user_1 hello
+docker-user-1@rcc-hrl-kvg-558:~$ docker rm -fv orion
+orion
+docker-user-1@rcc-hrl-kvg-558:~$ docker rm -fv mongo
+mongo
+docker-user-1@rcc-hrl-kvg-558:~$ docker run -d -v mongodata:/data/db --net front --name mongo mongo:3.2 --nojournal
+651c807290614313956d8d72c521684745ce66b52cee9622fc9154776f4d283b
+docker-user-1@rcc-hrl-kvg-558:~$ docker run -d -p 1026 --net front --name orion fiware/orion -dbhost mongo
+f343271767472660c1b2c9093986470d82429a7eabd4cd17e57f7fe43afe6c78
 
-$ docker --config ~/docker-user-1 rm con1  
-con1
-$ docker --config ~/docker-user-1 rm con2
-con2
-$ docker --config ~/docker-user-1 run -v volumeA:/data --name con2  busybox sh -c "cat /data/file.txt"
-docker_user_1 hello
-
-$ docker --config ~/docker-user-2 volume ls
-DRIVER              VOLUME NAME
-$ docker --config ~/docker-user-2 run -v volumeA:/data  busybox sh -c "cat /data/file.txt"
-cat: can't open '/data/file.txt': No such file or directory
-$ docker --config ~/docker-user-2 volume create --name volumeA
-volumeA
-$ docker --config ~/docker-user-2 volume ls
-DRIVER              VOLUME NAME
-local               docker-host-1/volumeA
-local               docker-host-2/volumeA
-$ docker --config ~/docker-user-2 run -v volumeA:/data --name con1  busybox sh -c "echo docker_user_2 hello  > /data/file.txt"
-$ docker --config ~/docker-user-2 run -v volumeA:/data --name con2  busybox sh -c "cat /data/file.txt"
-docker_user_2 hello
-$ docker --config ~/docker-user-1 run -v volumeA:/data --name con3 busybox sh -c "cat /data/file.txt"
-docker_user_1 hello
-
-$ docker --config ~/docker-user-1  rm -v $(docker --config ~/docker-user-1  ps -a -q)
-b5d565bb55bb
-c22cd72c4dad
-3ff0b33b9476
-0b6a4edf6fac
-$ docker --config ~/docker-user-2  rm -v $(docker --config ~/docker-user-2  ps -a -q)
-768882a1f8ca
-7b8f8a0f589a
-4434fbd79834
-$ docker --config ~/docker-user-1 volume rm volumeA
-volumeA
-$ docker --config ~/docker-user-2 volume rm volumeA
-volumeA
-$ docker --config ~/docker-user-1 volume ls
-DRIVER              VOLUME NAME
-$ docker --config ~/docker-user-2 volume ls
-DRIVER              VOLUME NAME
-$ 
-
-
+docker-user-1@rcc-hrl-kvg-558:~$ port=$(docker port orion 1026)
+docker-user-1@rcc-hrl-kvg-558:~$ curl ${port}/v2/entities
+[{"id":"Room2","type":"Room","pressure":{"type":"Number","value":720.000000},"temperature":{"type":"Number","value":23.000000}}]
 ```
 
-###Container referencing with link and volume-from. 
+
+####Orion and mongo: using referencing with link and volume-from. 
 In this example we use fiware's orion and mongodb to demonstrate container referencing with flags --link and --volume-from. 
+
+It is important to note FDCS supports links and volume-from, however it is preferable to use user defined overlay networks and NFS volumes.  Docker has deprecated links.  NFS volumes are shared by all docker hosts in the FDCS cluster and thus contains referencing NFS volume may run on any host in the FDCS cluster.  Whereas containers that reference other containers with the volume-from flag must all run on the same docker host. 
 
 User creates a mongodb data volume.
 ```

@@ -50,7 +50,7 @@ The *config.json* takes the following form:
 
 The default location of the configuration file is *$HOME/.docker*.  But you can use the docker --config flag to indicate another directory. 
 
-There are many ways to get your keystone token id and tenant id.  For instance you could use curl.  But we have provided and a script called [set-docker-config.bash](https://github.com/fiware-docker/docker-container-service/tree/master/docs/userguide/set-docker-config.md) that makes creating your config.json file easy.
+There are many ways to get your keystone token id and tenant id.  For instance you could use curl.  But we have provided and a script called [set-docker-config.bash](./set-docker-config.md) that makes creating your config.json file easy.
   
 This is an example of using the script to create a docker configuration file at .docker/config.json: 
 
@@ -58,7 +58,7 @@ This is an example of using the script to create a docker configuration file at 
 
 Keystone tokens expire after appproximately one day so you will need to update the configuration file daily.
 
-For more information about the script see the [set_docker_config readme](https://github.com/fiware-docker/docker-container-service/tree/master/docs/userguide/set-docker-config.md).
+For more information about the script see the [set_docker_config readme](./set-docker-config.md).
 
 
 4) *Run docker commands:*
@@ -110,21 +110,22 @@ There are some restrictions on docker requests to run and create containers. In 
 
 ## Networking containers
 ### User Defined Networks
-FDCS supports user defined networks and their management.  Currently it only supports bridge type networks.  In the future it will support overlay networks. Containers on the same network can securely communicate with each other, but those on different networks are isolated from each.  Each network has its own DNS which allows communication between containers on the same network using container names.
+FDCS supports user defined networks and their management.  Containers on the same network can securely communicate with each other, but those on different networks are isolated from each.  Each network has its own DNS which allows communication between containers on the same network using container names. It is preferable to define overlay networks, since your can containers can be launched on any docker host in the FDCS cluster. 
 
 ### linking containers
-FDCS supports the docker link feature.  The docker link feature allows containers to discover each other and securely transfer information about one container to another container.  However, links are being deprecated by docker so it is preferred to leverage user defined networks when networking your containers.
+FDCS supports the docker link feature.  The docker link feature allows containers to discover each other and securely transfer information about one container to another container.  However, links are being deprecated by docker so it is preferred to leverage user defined overlay networks when networking your containers.
 
 ### host port mapping
 Host port mapping allows public access to containers.  Host ports may be bound to a container ports so that the container listens for incoming traffic on its port while the actual traffic is being directed at a host port. Port bindings are restricted to those host ports that the docker auto assigns in the ephermal port range which typically ranges from 32768 to 61000.  Thus the -P or --publish-all flags are supported but specifying a value in the host port with the -p or --publish flag are rejected.
 
 
 ## Managing container data
+### User Defined NFS Volumes
+FDCS supports user defined NFS volumes and their management.  Multiple containers can use the same NFS volume in the same time period. This is useful if two containers need access to shared data. For example, if one container writes and the other reads the data. User defined NFS volume data persist even when the containers that reference the volume are removed. Further FDCS mounts user defined NFS volumes on a NFS mount point that is shared by all the hosts in the FDCS cluster. Thus, containers on different hosts can easily share data.
+
 ### Data Volume Containers
 FDCS supports *Data Volume Containers* and their management.  If you have some persistent data that you want to share between containers, or want to use from non-persistent containers, you can create a named *Data Volume Container*. Containers that want to share the data can reference the *Data Volume Container* with the create volume --volumes-from flag. *Data Volume Container* data persists even when the containers that reference the data volume container are removed.
 
-### User Defined Volumes
-FDCS supports user defined volumes and their management.  Multiple containers can use the same volume in the same time period. This is useful if two containers need access to shared data. For example, if one container writes and the other reads the data. User defined volume data persist even when the containers that reference the volume are removed. Further since FDCS mounts user defined volumes on a NFS mount point the volumes are shared by all the host in the FDCS cluster. Thus, containers on different hosts can easily share data.  
 ### host volume mounts
 The docker create container command may mount a host volume with it's -v or --volume flags.  However, FDCS does not allow this, since the user can not have direct access to FDCS's docker hosts. Thus a command that attempts to mount a host volume in the -v or --volume flags is rejected. 
 
@@ -138,16 +139,16 @@ Note: we do plan to support managing images in private repositories in the futur
 
 
 ##Docker CLI
-Once you prepare your docker client as described in the user guide's Quick Start you can use the [Docker CLI](https://docs.docker.com/engine/reference/commandline/cli/). All the commands to manage your containers are supported. But they are limited to containers that belonging to the tenant specified in your config.json file.  So ps will only list containers belonging to the specified tenant. Likewise, there are some restictions on docker run and create.
+Once you prepare your docker client as described in [Quick Start](./user-guide.md##Quick Start) you can use the [Docker CLI](https://docs.docker.com/engine/reference/commandline/cli/). All the commands to manage your containers are supported. But they are limited to containers that belonging to the tenant specified in your config.json file.  So ps will only list containers belonging to the specified tenant. Likewise, there are some restictions on docker run and create.
 
-See [Docker CLI Support](https://github.com/fiware-docker/docker-container-service/tree/master/docs/userguide/docker-cli.md).
+See [Docker CLI Support](./docker-cli.md).
 
 ##docker-compose
-Once you prepare your docker client as described in the user guide's Quick Start you can use [Docker Compose](https://docs.docker.com/compose/). We support Docker-Compose 1.6.2 and above.
+Once you prepare your docker client as described in the user guide's [Quick Start](./user-guide.md##Quick Start) you can use [Docker Compose](https://docs.docker.com/compose/). We support Docker-Compose 1.6.2 and above.
 
 Note: docker-compose does not support the docker cli --config flag, so the ~/.docker/config.json must contain headers X-Auth-Token and X-Auth-TenantId. Likewise, docker-compose does not support the docker cli -H flag so the environment variable must be set to tcp://docker.lab.fiware.org:2376.
 
-See [docker-compose Support](https://github.com/fiware-docker/docker-container-service/tree/master/docs/userguide/docker-compose.md).
+See [docker-compose Support](./docker-compose.md).
 
 
 ## Getting Docker help
