@@ -194,9 +194,9 @@ docker-user-1 runs two containers, container1 and container2, and attaches them 
 ```
 $ docker --config ~/docker-user-1 run --net=isolated_nw -itd -p 80 --name=container1 busybox httpd -f -p 80
 722ea834daf52c641f1606ad594dce5def56815c421c367fe28d5d3eb33aec2d
-docker-user-1@rcc-hrl-kvg-558:~$ docker --config ~/docker-user-1 run --net=isolated_nw -itd -p 80 --name=container2 busybox httpd -f -p 80
+$ docker --config ~/docker-user-1 run --net=isolated_nw -itd -p 80 --name=container2 busybox httpd -f -p 80
 7b17c249ac4bbc1211c9a048e0775b18cba5435858b3773086972806cf25cc36
-docker-user-1@rcc-hrl-kvg-558:~$ docker --config ~/docker-user-1 ps
+$ docker --config ~/docker-user-1 ps
 CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS                          NAMES
 7b17c249ac4b        busybox             "httpd -f -p 80"    14 seconds ago      Up 11 seconds       130.206.119.32:32770->80/tcp   docker-host-3/container2
 722ea834daf5        busybox             "httpd -f -p 80"    43 seconds ago      Up 40 seconds       130.206.119.28:32771->80/tcp   docker-host-2/container1

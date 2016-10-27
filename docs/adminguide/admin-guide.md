@@ -53,7 +53,7 @@ This section describes the procedure for manually deploying a FIWARE Docker Cont
 
 <li>Create a Swarm Management Node VM instance.  Associate it with its security group and key pair. Install Docker on the Swarm Management Node which will be used to launch the docker image of the Multi-Tenant Swarm.
 
-<li>Create a security group for the Docker nodes.  It containers rules for allowing public access to the SSH port, Ping, and docker auto assigned ports.  The docker auto assigned ports are those ports that docker automatically assigns to containers as there external ports when they are not specifically designated in the docker command.  It also containers a rule for exclusive access to the Docker port from the Swarm Management Node.  Use the Swam Management Node’s public IP.  
+<li>Create a security group for the Docker nodes.  It containers rules for allowing public access to the SSH port, Ping, and docker auto assigned ports.  The docker auto assigned ports are those ports that docker automatically assigns to containers as there external ports when they are not specifically designated in the docker command.  It also containers a rule for exclusive access to the Docker port from the Swarm Management Node.  Use the Swam Management Node’s public IP. Finally, allows interaction between the cluster's docker host nodes over their private network to support User Defined Overlay networks.  
 
  <table style="width:100%">
   <tr>
@@ -84,20 +84,37 @@ This section describes the procedure for manually deploying a FIWARE Docker Cont
     <td>2375</td>
     <td> Swarm Manager Public IP/32 (CIDR)</td>
   </tr>
-    <tr>
+  <tr>
     <td>Docker Containers auto assigned by docker engine</td>
-    <td>TCP</td>
+    <td>TCP/UDP</td>
     <td>32768</td>
     <td>61000</td>
     <td> 0.0.0.0/0 (CIDR) </td>
   </tr>
+   <tr>
+    <td>Docker Overlay Network Control Plane</td>
+    <td>TCP/UDP</td>
+    <td>7946</td>
+    <td>7946</td>
+    <td>Cluster's private network</td>
+  </tr>
+  <tr>
+    <td>Docker Overlay Network Data Plane</td>
+    <td>UDP</td>
+    <td>4789</td>
+    <td>4789</td>
+    <td>Cluster's private network</td>
+
+  </tr>
+
   </table>
 
 <li> Create docker nodes.  Associate them with their security group and ssh keypair. 
 [Install Docker on all the Docker Node instances](https://docs.docker.com/v1.11/).  
 Enable swap cgroup memory limit following those steps from [docker documentation]( https://docs.docker.com/v1.11/engine/installation/linux/ubuntulinux/)
 
-<li> Create a security group for the NFS server.  It contains rules for ssh access and for servicing the Docker Nodes.
+<li> Create a security group for the NFS server.  It contains rules that allow the cluster's docker hosts to mount NFS volumes and ssh access for the administrator. 
+
 
  <table style="width:100%">
   <tr>
@@ -126,65 +143,105 @@ Enable swap cgroup memory limit following those steps from [docker documentation
     <td>TCP</td>
     <td>2049</td>
     <td>2049</td>
-    <td> Docker Nodes  IP/32 (CIDR)</td>
+    <td>Cluster's private network</td>
   </tr>
   <tr>
     <td>NFS Server</td>
     <td>UDP</td>
     <td>2049</td>
     <td>2049</td>
-    <td> Docker Nodes  IP/32 (CIDR)</td>
+    <td>Cluster's private network</td>
   </tr>
 </table>
 
 
 <li> Create a NFS Server.  Associate it with its security group and key pair.
 <li> Install, configure and start the NFS Server:
-
-    <p><b> 
-     >apt-get install nfs-kernel-server
-    </b></p>
-    
-     Create a directory that will be used to mount the docker volumes on the docker nodes:
-    <p>
-    <b>>sudo mkdir /docker_volumes</b>
-    </p>
-     In <b>/etc/hosts/</b> allow access to the docker volume directory to the docker nodes.  For instance:
-     <p>
-    <b>/docker_volumes <docker node ip>/24(rw,sync,no_subtree_check,no_root_squash)</b>.
-    </p>
-     Start the nfs server:
-     <p>
+<ol>
+    <li> Install NFS server 
+     <b>>apt-get install nfs-kernel-server</b>    
+    <li>Create a directory that will be used to mount the docker volumes on the docker nodes:
+    <b>>sudo mkdir /var/lib/openstorage/nfs</b>
+    <b>>sudo mkdir /var/lib/osd/mounts</b>
+    <li>In <b>/etc/hosts/</b> allow access to the docker volume directory to the docker nodes.  For instance:
+    <b>/var/lib/openstorage/nfs cluster private network(rw,sync,no_subtree_check,no_root_squash)</b>.
+    <b>/var/lib/osd/mounts cluster private network/24(rw,sync,no_subtree_check,no_root_squash)</b>.
+    <li>Start the nfs server:
     <b>>sudo service nfs-kernel-server restart</b>
-    </p>
+</ol>
+    
+<li> Create a security group for the Key-Value Store server.  It contains rules for ssh access and for servicing the Docker Nodes. Key-Value Store is used to support Docker Overlay Networks and the NFS Plugin driver.
+ <table style="width:100%">
+  <tr>
+    <th><b>service</b></th>
+    <th><b>IP Protocol</b></th>
+    <th><b>From Port</b></th>
+    <th><b>To Port</b></th>
+    <th><b>Source</b></th>
+  </tr>
+  <tr>
+    <td>SSH</td>
+    <td>TCP</td>
+    <td>22</td>
+    <td>22</td>
+    <td> 0.0.0.0/0 (CIDR)</td>
+  </tr>
+  <tr>
+    <td>Ping</td>
+    <td>ICMP</td>
+    <td>0</td>
+    <td>0</td>
+    <td> 0.0.0.0/0 (CIDR)</td>
+  </tr>
+  <tr>
+    <td>Key-Value Store Server's listening ports</td>
+    <td>TCP</td>
+    <td>2049, 4001, etc.</td>
+    <td>2049, 4001, etc.</td>
+    <td>Cluster's private network</td>
+  </tr>
+</table>
 
-<li> On the docker nodes install the NFS client and configure it to use the nfs mount point:
-    <p> 
+
+<li> Create a Key-Value Store Server.  Associate it with its security group and key pair.
+<li> Install, configure and start the Key-Value Store Server:
+In this example we use [etcd](https://github.com/coreos/etcd), but [consul](https://www.consul.io/intro/getting-started/kv.html) and [ZooKeeper](https://zookeeper.apache.org/doc/r3.3.3/zookeeperStarted.html) also may be used. 
+<ol>
+<li>[Install Docker](https://docs.docker.com/v1.11/).
+
+<li>[Run etcd as a docker container](https://github.com/coreos/etcd/blob/master/Documentation/op-guide/container.md#docker) 
+     <b>>sudo docker run -d --restart always -v /etcd0.etcd:/etcd0.etcd -v /usr/share/ca-certificates/:/etc/ssl/certs -p 4001:4001 -p 2380:2380 -p 2379:2379 --name etcd quay.io/coreos/etcd etcd  -name etcd0  -advertise-client-urls http:// key-value server internal network ip:2379,http://192.168.209.52:4001  -listen-client-urls http://0.0.0.0:2379,http://0.0.0.0:4001  -initial-advertise-peer-urls http:// key-value server internal network ip:2380  -listen-peer-urls http://0.0.0.0:2380  -initial-cluster-token etcd-cluster-1  -initial-cluster etcd0=http:// key-value server internal network ip:2380  -initial-cluster-state new </b>
+</ol>
+
+<li> Launch the docker engine daemon on all the cluster's docker hosts. The cluster will support User Defined Overlay Networks and NFS Volumes. Configure the engine to listen on the port that was specified when you created the Docker Nodes security group above and interact with the key-value store to support the docker overlay natwork. You should also allow it to listen on a Linux file socket to simplify debug.  
+<ol>
+<li>Update <b>/etc/default/docker</b> with 
+    <b>DOCKER_OPTS="-H unix:///var/run/docker.sock -H tcp://0.0.0.0:2375 --icc=false --cluster-store=etcd://key-value store ip:port --cluster-advertise=docker node ip:2375"</b>. 
+<li>restart docker as a service:
+    <b>>sudo service docker restart</b>    
+<li>Configure and start the [OpenStorage Docker volume plugin drive](https://github.com/libopenstorage/openstorage) to support User Defined NFS volumes.
+<ol>
+<li> Create [yaml cnfiguration file](https://github.com/libopenstorage/openstorage).
+<li> Install NFS client
     <b>>sudo apt-get install common-nfs</b>
-    </p>
-     Mount the docker volumes directory to be backed by nfs:
-     <p>
-    <b>>sudo mount -t nfs -o proto=tcp,port=2049 <nfs server ip>:/docker_volumes /var/lib/docker/volumes</b>
-    </p>
-     
+<li> Mount NFS to the directories: /var/lib/openstorage/nfs and /var/lib/osd/mounts /var/lib/osd/mounts.  For example:
+    <b>> sudo mount -t nfs -o proto=tcp,port=2049 nfs server ip:/var/lib/openstorage/nfs /var/lib/openstorage/nfs</b>
+    <b>> sudo mount -t nfs -o proto=tcp,port=2049 nfs server ip:/var/lib/osd/mounts /var/lib/osd/mounts</b> 
+<li> Verify the mounts:
+    <b>>sudo df -P -T /var/lib/openstorage/nfs  | tail -n +2 | awk '{print $2}'
+    nfs</b>
+    <b>>sudo df -P -T /var/lib/osd/mounts  | tail -n +2 | awk '{print $2}'
+    nfs</b>
+<li>Start the driver as a docker container:
+    <b>>sudo docker run  -d --restart always   --privileged -v /tmp:/tmp -v /var/lib/openstorage/:/var/lib/openstorage/ -v /var/lib/osd/:/var/lib/osd/   -v /run/docker/plugins:/run/docker/plugins  -v /var/lib/docker:/var/lib/docker --name osd openstorage/osd -d -f /tmp/config_nfs.yaml --kvdb etcd-kv://key-value store ip:port/
+</ol>
 
-<li> The engine daemon will be running as a service on each node
-Configure the engine to listen on the port that was specified when you created the Docker Nodes security group above.  You should also allow it to listen on a Linux file socket to simplify debug.  
-
-     Update <b>/etc/default/docker</b> with 
-     <p>
-    <b>DOCKER_OPTS="-H unix:///var/run/docker.sock -H tcp://0.0.0.0:2375 --icc=false"</b>. 
-    </p>
-     And then start docker as a service:
-     <p>
-    <b>>sudo service docker restart</b>
-    </p>
+</ol>
 
 <li> Configuring Swarm:
    FDCS can be configured by setting its environment variables. FDCS environment variables are briefly described below:
    <ul>
-      <li> <b>SWARM_ADMIN_TENANT_ID</b>: contains the id of the tenant that may run docker commands as admin. Admin is authorized to manage docker resources, including tenant containers, volumes, network, etc., and issue all docker requests without any filtering.
-       
+      <li> <b>SWARM_ADMIN_TENANT_ID</b>: contains the id of the tenant that may run docker commands as admin. Admin is authorized to manage docker resources, including tenant containers, volumes, network, etc., and issue all docker requests without any filtering.       
       <li> <b>SWARM_APIFILTER_FILE</b>: may point to a json file that describes the docker commands an installation of the service wants to filter out. If no file is pointed to it defaults to apifilter.json in the directory where swarm is started. 
       
 Currently there is only support for a "disableapi" array which
@@ -235,9 +292,7 @@ Currently quota support is limited to tenant memory consumption and it is the sa
 {
    "Memory": 300
 }
-</code></pre>
-
-      
+</code></pre>      
     </ul>
 
 <li> Start Multi-Tenant Swarm Manager daemon (without TLS) on the Swarm Management Node.  The Multi-Tenant Swarm docker image resides in the FIWARE Docker Hub repository at <b>fiware/swarm_multi_tenant</b>(https://hub.docker.com/r/fiware/swarm_multi_tenant/) 
