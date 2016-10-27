@@ -251,15 +251,14 @@ This is an example how an installation could disable network support:
 {
   "disableapi": [ networkslist, networkinspect, networkconnect, networkdisconnect, networkcreate, networkdelete ]
 }
-</pre></code>      
+</pre></code>
+<li> <b>SWARM_AUTH_BACKEND:</b> if set to "Keystone" then Keystone is used to authenticate Tenants that docker requests based on the Authorization Token and Tenant ID in their request header.
       
-      <li> <b>SWARM_AUTH_BACKEND:</b> if set to "Keystone" then Keystone is used to authenticate Tenants that docker requests based on the Authorization Token and Tenant ID in their request header.
+<li> <b>SWARM_ENFORCE_QUOTA:</b> if set to "true" then the Multi-Tenant Swarm Quota feature is enabled otherwise it is disabled.  See <b>SWARM_QUOTA_FILE</b> for how to specify quotas.
       
-      <li> <b>SWARM_ENFORCE_QUOTA:</b> if set to "true" then the Multi-Tenant Swarm Quota feature is enabled otherwise it is disabled.  See <b>SWARM_QUOTA_FILE</b> for how to specify quotas.
+<li> <b>SWARM_FLAVORS_ENFORCED:</b> if set to "true" then the Multi-Tenant Swarm Flavors feature is enabled otherwise it is disabled. The  flavors specification is embodied in a json file which contains a map describing the valid resource combinations that can appear in create container requests.  Currently, Memory is the only resource that can be specified as a flavor. The Memory resource should be specified as a whole number which represents  megabytes of memory.   See <b>SWARM_FLAVORS_FILE</b> for how to specify flavors.
       
-      <li> <b>SWARM_FLAVORS_ENFORCED:</b> if set to "true" then the Multi-Tenant Swarm Flavors feature is enabled otherwise it is disabled. The  flavors specification is embodied in a json file which contains a map describing the valid resource combinations that can appear in create container requests.  Currently, Memory is the only resource that can be specified as a flavor. The Memory resource should be specified as a whole number which represents  megabytes of memory.   See <b>SWARM_FLAVORS_FILE</b> for how to specify flavors.
-      
-      <li> <b>SWARM_FLAVORS_FILE:</b> if SWARM_FLAVORS_ENFORCED is set to "true" then SWARM_FLAVORS_FILE points to a file with the flavors specification.  If there is no file pointed to then it defaults to flavors.json in the directory where swarm is started. 
+<li> <b>SWARM_FLAVORS_FILE:</b> if SWARM_FLAVORS_ENFORCED is set to "true" then SWARM_FLAVORS_FILE points to a file with the flavors specification.  If there is no file pointed to then it defaults to flavors.json in the directory where swarm is started. 
       
 The specification must contain a "default" flavor.  When the create container parameters do not match any of the specified flavors, the default flavor is applied to the create container replacing its original parameters. This is an example of the json flavors specification that is shipped with Multi-Tenant Swarm:       
 <pre><code>       
@@ -276,40 +275,31 @@ The specification must contain a "default" flavor.  When the create container pa
 
 }
 </code></pre>
-In the above flavors specification example there are three flavors default, medium, and large.  <i>default</i> describes 64 megabytes of memory. <i>medium</i> describes 128 megabytes of memory. <i>large</i> describes 256 megabytes of memory. This means that a create container is limited to specifying its memory as 64MB, 128MB, or 256MB. If none is specified then the system will apply the default, i.e. 64MB. 
+In the above flavors specification example there are three flavors default, medium, and large.  <i>default</i> describes 64 megabytes of memory. <i>medium</i> describes 128 megabytes of memory. <i>large</i> describes 256 megabytes of memory. This means that a create container is limited to specifying its memory as 64MB, 128MB, or 256MB. If none is specified then the system will apply the default, i.e. 64MB.
 
-      <li> <b>SWARM_KEYSTONE_URL:</b> if SWARM_AUTH_BACKEND is set to "Keystone" then SWARM_KEYSTONE_URL must specify Keystone's URL, e.g. http://cloud.lab.fi-ware.org:4730/v2.0/.  
-      
-      <li> <b>SWARM_NETWORK_AUTHORIZATION:</b> if set to "false" then the Multi-Tenant Swarm Network Authorization feature is disabled otherwise it is enable.
-      
-      <li> <b>SWARM_MEMBERS_TENANT_ID</b>: contains the tenant id whose members are eligible to use the service. If not set then any valid token tenant id may use the service. SWARM_MEMBERS_TENANT_ID is only valid when SWARM_AUTH_BACKEND is set to Keystone.
-      
-      <li> <b>SWARM_MULTI_TENANT:</b> if set to "false" then the Multi-Tenant Swarm is disabled otherwise Multi-Tenant Swarm is enabled. When Multi-Tenant Swarm is disabled the result is that the service is launched as vanilla Swarm. Generally disabling Multi-Tenant Swarm is used for debugging purposes to discover if a bug is related to the swarm docker configuration or to a Multi-Tenant Swarm feature.
-      
-        <li> <b>SWARM_QUOTA_FILE:</b> if SWARM_ENFORCE_QUOTA is set to "true" then SWARM_QUOTA_FILE may specify the quota specification.  If there is no file pointed to it defaults to quota.json in the directory where swarm is started.
+<li> <b>SWARM_KEYSTONE_URL:</b> if SWARM_AUTH_BACKEND is set to "Keystone" then SWARM_KEYSTONE_URL must specify Keystone's URL, e.g. http://cloud.lab.fi-ware.org:4730/v2.0/.  
+<li> <b>SWARM_NETWORK_AUTHORIZATION:</b> if set to "false" then the Multi-Tenant Swarm Network Authorization feature is disabled otherwise it is enable.
+<li> <b>SWARM_MEMBERS_TENANT_ID</b>: contains the tenant id whose members are eligible to use the service. If not set then any valid token tenant id may use the service. SWARM_MEMBERS_TENANT_ID is only valid when SWARM_AUTH_BACKEND is set to Keystone.
+<li> <b>SWARM_MULTI_TENANT:</b> if set to "false" then the Multi-Tenant Swarm is disabled otherwise Multi-Tenant Swarm is enabled. When Multi-Tenant Swarm is disabled the result is that the service is launched as vanilla Swarm. Generally disabling Multi-Tenant Swarm is used for debugging purposes to discover if a bug is related to the swarm docker configuration or to a Multi-Tenant Swarm feature.
+<li> <b>SWARM_QUOTA_FILE:</b> if SWARM_ENFORCE_QUOTA is set to "true" then SWARM_QUOTA_FILE may specify the quota specification.  If there is no file pointed to it defaults to quota.json in the directory where swarm is started.
 Currently quota support is limited to tenant memory consumption and it is the same for all tenants.  This is an example a json quota specification:
 <pre><code>
 {
    "Memory": 300
 }
-</code></pre>      
-    </ul>
+</code></pre>
+</ul>
 
 <li> Start Multi-Tenant Swarm Manager daemon (without TLS) on the Swarm Management Node.  The Multi-Tenant Swarm docker image resides in the FIWARE Docker Hub repository at <b>fiware/swarm_multi_tenant</b>(https://hub.docker.com/r/fiware/swarm_multi_tenant/) 
 If token discovery is to be used then add the discovery flag, otherwise use the file flag to point to a file with a list of all the Docker Node public ips and docker ports.  For instance:
-   <pre>
-   <code>
+
    >docker run -t -p 2376:2375 -v /tmp/cluster.ipstmp/cluster.ips -e SWARM_AUTH_BACKEND=Keystone -e SWARM_KEYSTONE_URL=http://cloud.lab.fi-ware.org:4730/v2.0/ -t fiware/swarm_multi_tenant:v0 --debug manage  file:///tmp/cluster.ips
-   </code>
-   </pre>
 
 <li> Test the cluster’s remote connectivity by pinging and sshing to all the instances (including the Swarm Management Node). 
 
 <li> Test whether the Multi-Tenant Swarm Cluster works as expected by using docker commands on your local docker client.  The docker –H flag specifies the Swarm Manager Node and swarm port.  The docker –config specifies the directory where a config.json file is prepared with a valid token and a valid tenantid.  For instance:
 
-    <p><b>    
     >docker –H tcp://<Swam Manager Node IP>:2376  --config $HOME/dir docker command
-    </b></b>
 
 See the FIWARE Docker Container Service Users Guide for more details on how to use the  service.
 
