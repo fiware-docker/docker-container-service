@@ -306,18 +306,19 @@ See the FIWARE Docker Container Service Users Guide for more details on how to u
 </ol>  
 
 ## Getting Docker help
-
-* [FIWARE Docker Container Service Users Guide](https://github.com/fiware-docker/docker-container-service/blob/master/docs/userguide/user-guide.md)
-* [Docker homepage](https://www.docker.com/)
-* [Docker Hub](https://hub.docker.com)
-* [Docker blog](https://blog.docker.com/)
-* [Docker documentation](https://docs.docker.com/)
-* [Docker Getting Started Guide](https://docs.docker.com/v1.11/engine/quickstart/)
-* [Docker code on GitHub](https://github.com/docker/docker)
-* [Docker mailing
+<ul>
+<li> [FIWARE Docker Container Service Users Guide](https://github.com/fiware-docker/docker-container-service/blob/master/docs/userguide/user-guide.md)
+<li> [Docker homepage](https://www.docker.com/)
+<li> [Docker Hub](https://hub.docker.com)
+<li> [Docker blog](https://blog.docker.com/)
+<li> [Docker documentation](https://docs.docker.com/)
+<li> [Docker Getting Started Guide](https://docs.docker.com/v1.11/engine/quickstart/)
+<li> [Docker code on GitHub](https://github.com/docker/docker)
+<li> [Docker mailing
   list](https://groups.google.com/forum/#!forum/docker-user)
-* Docker on IRC: irc.freenode.net and channel #docker
-* [Docker on Twitter](https://twitter.com/docker)
-* Get [Docker help](https://stackoverflow.com/search?q=docker) on
+<li> Docker on IRC: irc.freenode.net and channel #docker
+<li> [Docker on Twitter](https://twitter.com/docker)
+<li> Get [Docker help](https://stackoverflow.com/search?q=docker) on
   StackOverflow
-* [Docker.com](https://www.docker.com/)
+<li> [Docker.com](https://www.docker.com/)
+</ul>
