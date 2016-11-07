@@ -305,7 +305,7 @@ See the FIWARE Docker Container Service Users Guide for more details on how to u
 
 </ol>  
 
-## Getting Docker help
+<h4> Getting Docker help
 <ul>
 <li> [FIWARE Docker Container Service Users Guide](https://github.com/fiware-docker/docker-container-service/blob/master/docs/userguide/user-guide.md)
 <li> [Docker homepage](https://www.docker.com/)
