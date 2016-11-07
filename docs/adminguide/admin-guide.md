@@ -303,10 +303,11 @@ If token discovery is to be used then add the discovery flag, otherwise use the 
 
 See the FIWARE Docker Container Service Users Guide for more details on how to use the  service.
 
-</ol>  
+</ol> 
 
-<h4> Getting Docker help
+
 <ul>
+<lh> Getting Docker help</lh>
 <li> [FIWARE Docker Container Service Users Guide](https://github.com/fiware-docker/docker-container-service/blob/master/docs/userguide/user-guide.md)
 <li> [Docker homepage](https://www.docker.com/)
 <li> [Docker Hub](https://hub.docker.com)
