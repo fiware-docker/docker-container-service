@@ -311,10 +311,10 @@ See the FIWARE Docker Container Service Users Guide for more details on how to u
 <li> <a href="https://github.com/fiware-docker/docker-container-service/blob/master/docs/userguide/user-guide.md">FIWARE Docker Container Service Users Guide</a>
 <li> <a href="https://www.docker.com/">Docker homepage</a>
 <li> <a href="https://hub.docker.com">Docker Hub</a>
-<li> <a href="https://blog.docker.com)">Docker blog</a>
-<li> <a hdref="https://docs.docker.com">Docker documentation</a>
+<li> <a href="https://blog.docker.com">Docker blog</a>
+<li> <a href="https://docs.docker.com">Docker documentation</a>
 <li> <a href="https://docs.docker.com/v1.11/engine/quickstart">Docker Getting Started Guide</a>
-<li> <a href="ttps://github.com/docker/docker">Docker code on GitHub</a>
+<li> <a href="https://github.com/docker/docker">Docker code on GitHub</a>
 <li> <a href="https://groups.google.com/forum/#!forum/docker-user">Docker mailing
   list</a>
 <li> Docker on IRC: irc.freenode.net and channel #docker
